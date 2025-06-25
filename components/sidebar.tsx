@@ -15,6 +15,7 @@ const navigation = [
   { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
   { name: "Clientes", href: "/dashboard/clientes", icon: Users },
   { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
+  { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
   { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]

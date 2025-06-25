@@ -15,14 +15,16 @@ export async function GET(_: NextRequest) {
       ORDER BY MONTH(fecha_venta)
     `
 
-    const resultado = await executeQuery(query) as any[]
+    const resultado = await executeQuery(query, []) as any[]
 
     return NextResponse.json(
-      resultado.map((fila) => ({
-        mes: fila.mes,
-        total: parseFloat(fila.total),
-        cantidad: fila.cantidad,
-      }))
+      Array.isArray(resultado)
+        ? resultado.map((fila) => ({
+            mes: fila.mes,
+            total: parseFloat(fila.total),
+            cantidad: fila.cantidad,
+          }))
+        : []
     )
   } catch (error) {
     console.error("Error generando reporte mensual:", error)
