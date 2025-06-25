@@ -1,0 +1,18 @@
+{
+    "name": "felipeartola/ferreteria-system",
+    "description": "Sistema de gestión para ferretería",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Felipeartola\\FerreteriaSystem\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "FAAO01",
+            "email": "fartola28@gmail.com"
+        }
+    ],
+    "require": {}
+}
