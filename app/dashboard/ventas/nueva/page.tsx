@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Trash2 } from "lucide-react"
+
 
 interface Producto {
   id_producto: number
@@ -33,6 +35,7 @@ export default function NuevaVentaPage() {
   const [items, setItems] = useState<ItemVenta[]>([{ id_producto: "", cantidad: "1", precio_unitario: "" }])
   const [id_cliente, setIdCliente] = useState("")
   const [metodo_pago, setMetodoPago] = useState("efectivo")
+  const [montoRecibido, setMontoRecibido] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -63,7 +66,7 @@ export default function NuevaVentaPage() {
   }
 
   const agregarItem = () => {
-    setItems([...items, { id_producto: "", cantidad: "1", precio_unitario: "" }])
+    setItems(prev => [...prev, { id_producto: "", cantidad: "1", precio_unitario: "" }])
   }
 
   const eliminarItem = (index: number) => {
@@ -72,13 +75,26 @@ export default function NuevaVentaPage() {
     setItems(nuevosItems)
   }
 
+  const calcularTotal = () =>
+    items.reduce((acc, item) => {
+      const cantidad = parseFloat(item.cantidad) || 0
+      const precio = parseFloat(item.precio_unitario) || 0
+      return acc + cantidad * precio
+    }, 0)
+
+  const total = calcularTotal()
+  const vuelto =
+    metodo_pago === "efectivo" && parseFloat(montoRecibido) > 0
+      ? parseFloat(montoRecibido) - total * 1.18
+      : null
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
     try {
-      const payload = {
+      const payload: any = {
         id_cliente: parseInt(id_cliente),
         metodo_pago,
         productos: items.map(item => ({
@@ -86,6 +102,12 @@ export default function NuevaVentaPage() {
           cantidad: parseFloat(item.cantidad),
           precio_unitario: parseFloat(item.precio_unitario),
         })),
+      }
+
+      if (metodo_pago === "transferencia") {
+        payload.id_transferencia = montoRecibido
+      } else if (metodo_pago === "tarjeta") {
+        payload.ultimos4 = montoRecibido
       }
 
       const res = await fetch("/api/ventas", {
@@ -105,18 +127,14 @@ export default function NuevaVentaPage() {
     }
   }
 
-  const handleCancelar = () => {
-    router.push("/dashboard/ventas")
-  }
-
   return (
-    <div className="max-w-3xl mx-auto mt-10">
-      <Card>
+    <div className="w-full px-6 py-6">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Nueva Venta</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <Label>Cliente</Label>
               <select
@@ -134,20 +152,46 @@ export default function NuevaVentaPage() {
               </select>
             </div>
 
-            <div>
-              <Label>Método de pago</Label>
-              <select
-                value={metodo_pago}
-                onChange={(e) => setMetodoPago(e.target.value)}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="transferencia">Transferencia</option>
-              </select>
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Método de pago</Label>
+                <select
+                  value={metodo_pago}
+                  onChange={(e) => setMetodoPago(e.target.value)}
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta">Tarjeta</option>
+                  <option value="transferencia">Transferencia</option>
+                </select>
+              </div>
 
-            <div className="space-y-4">
+              <div>
+                <Label>
+                  {metodo_pago === "transferencia"
+                    ? "ID de Transferencia"
+                    : metodo_pago === "tarjeta"
+                    ? "Últimos 4 dígitos"
+                    : "Monto recibido"}
+                </Label>
+                <Input
+                  type={metodo_pago === "efectivo" ? "number" : "text"}
+                  value={montoRecibido}
+                  onChange={(e) => setMontoRecibido(e.target.value)}
+                  required={metodo_pago !== "efectivo"}
+                  placeholder={
+                    metodo_pago === "transferencia"
+                      ? "ID de referencia"
+                      : metodo_pago === "tarjeta"
+                      ? "Ej: 1234"
+                      : "C$0.00"
+                  }
+                  maxLength={metodo_pago === "tarjeta" ? 4 : undefined}
+                  pattern={metodo_pago === "tarjeta" ? "\\d*" : undefined}
+                />
+              </div>
+            </div>
+                        <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="grid grid-cols-3 gap-3 items-end">
                   <div>
@@ -197,22 +241,44 @@ export default function NuevaVentaPage() {
                   )}
                 </div>
               ))}
+
               <Button type="button" variant="outline" onClick={agregarItem}>
                 + Agregar producto
               </Button>
             </div>
 
+            <div className="text-sm text-muted-foreground">
+              <p>Subtotal: C${total.toFixed(2)}</p>
+              <p>Impuesto (18%): C${(total * 0.18).toFixed(2)}</p>
+              <p><strong>Total: C${(total * 1.18).toFixed(2)}</strong></p>
+              {vuelto !== null && (
+                <p className={`font-semibold ${vuelto < 0 ? "text-red-600" : "text-green-600"}`}>
+                  {vuelto < 0
+                    ? `Falta: C$${Math.abs(vuelto).toFixed(2)}`
+                    : `Vuelto: C$${vuelto.toFixed(2)}`}
+                </p>
+              )}
+            </div>
+
             {error && <p className="text-sm text-red-600">{error}</p>}
 
             <div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  loading ||
+                  (metodo_pago === "transferencia" && montoRecibido.trim() === "") ||
+                  (metodo_pago === "tarjeta" && (montoRecibido.trim().length !== 4 || !/^\d+$/.test(montoRecibido)))
+                }
+              >
                 {loading ? "Registrando..." : "Registrar Venta"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 className="w-full mt-2"
-                onClick={handleCancelar}
+                onClick={() => router.push("/dashboard/ventas")}
                 disabled={loading}
               >
                 Cancelar

@@ -1,64 +1,58 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
-// GET /api/ventas/[id]
+// Obtener una venta por ID
 export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = params.id
+    const id = parseInt(params.id)
 
-    const query = `
-      SELECT v.*, p.nombre AS producto_nombre
+    const [venta] = await executeQuery(
+      `
+      SELECT 
+        v.id_venta, v.id_cliente, v.metodo_pago, v.fecha_venta, 
+        v.subtotal, v.impuesto, v.total,
+        c.nombre AS cliente_nombre, c.apellido AS cliente_apellido
       FROM ventas v
-      LEFT JOIN productos p ON v.id_producto = p.id_producto
-      WHERE v.id_venta = ?
-    `
-    const resultado = await executeQuery(query, [id]) as any[]
+      LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+      WHERE v.id_venta = ? AND v.eliminado = 0
+      LIMIT 1
+      `,
+      [id]
+    ) as any[]
 
-    if (!resultado || resultado.length === 0) {
+    if (!venta) {
       return NextResponse.json({ error: "Venta no encontrada" }, { status: 404 })
     }
 
-    return NextResponse.json({ venta: resultado[0] })
+    return NextResponse.json(venta)
   } catch (error) {
-    console.error("Error obteniendo venta:", error)
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
+    console.error("Error al obtener venta:", error)
+    return NextResponse.json({ error: "Error al obtener venta" }, { status: 500 })
   }
 }
 
-// PUT /api/ventas/[id]
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// Actualizar datos de una venta
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const id = params.id
-    const { id_producto, cantidad } = await request.json()
+    const id = parseInt(params.id)
+    const { id_cliente, metodo_pago, fecha_venta } = await req.json()
 
-    const query = `
+    if (!id_cliente || !metodo_pago || !fecha_venta) {
+      return NextResponse.json({ error: "Faltan datos obligatorios" }, { status: 400 })
+    }
+
+    await executeQuery(
+      `
       UPDATE ventas
-      SET id_producto = ?, cantidad = ?
+      SET id_cliente = ?, metodo_pago = ?, fecha_venta = ?, fecha_modificacion = NOW()
       WHERE id_venta = ?
-    `
+      `,
+      [id_cliente, metodo_pago, fecha_venta, id]
+    )
 
-    await executeQuery(query, [id_producto, cantidad, id])
-    return NextResponse.json({ message: "Venta actualizada correctamente" })
+    return NextResponse.json({ mensaje: "Venta actualizada correctamente" })
   } catch (error) {
-    console.error("Error actualizando venta:", error)
+    console.error("Error al actualizar venta:", error)
     return NextResponse.json({ error: "Error al actualizar venta" }, { status: 500 })
-  }
-}
-
-// DELETE /api/ventas/[id]
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-
-    const query = `
-      DELETE FROM ventas
-      WHERE id_venta = ?
-    `
-
-    await executeQuery(query, [id])
-    return NextResponse.json({ message: "Venta eliminada correctamente" })
-  } catch (error) {
-    console.error("Error eliminando venta:", error)
-    return NextResponse.json({ error: "Error al eliminar venta" }, { status: 500 })
   }
 }

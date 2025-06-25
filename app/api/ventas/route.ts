@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
       LEFT JOIN usuarios u ON v.id_usuario = u.id_usuario
       WHERE v.eliminado = 0
       ORDER BY v.fecha_venta DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
 
     const countQuery = `SELECT COUNT(*) AS total FROM ventas WHERE eliminado = 0`
 
-    const ventas = await executeQuery(query, [limit, offset])
+    const ventas = await executeQuery(query)
     const countResult = await executeQuery(countQuery) as any[]
     const total = countResult[0]?.total || 0
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No se pudo registrar la venta." }, { status: 500 })
     }
 
-    // Insertar productos vendidos
+    // Insertar productos vendidos y actualizar stock
     for (const producto of productos) {
       const cantidad = Number(producto.cantidad)
       const precio_unitario = Number(producto.precio_unitario)
