@@ -4,7 +4,8 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Package, ShoppingCart, Users, Store, Settings, LogOut, Tag, Truck, FileText } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Users, Store, Settings, LogOut, Tag, Truck, FileText, Database } from "lucide-react"
+import { data } from "autoprefixer"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -14,6 +15,7 @@ const navigation = [
   { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
   { name: "Clientes", href: "/dashboard/clientes", icon: Users },
   { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
+  { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 
