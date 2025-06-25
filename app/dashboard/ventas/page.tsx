@@ -20,6 +20,7 @@ interface Venta {
   cliente_apellido: string
   total: number
   fecha_venta: string
+  metodo_pago?: string // <-- Asegúrate que tu API retorna esto
 }
 
 interface Pagination {
@@ -52,18 +53,14 @@ export default function VentasPage() {
       const response = await fetch(`/api/ventas?${params}`)
       const data = await response.json()
 
-      console.log("🟡 Respuesta API:", data)
-
       if (Array.isArray(data.ventas)) {
         setVentas(data.ventas)
       } else {
-        console.warn("⚠️ Las ventas no son un array:", data.ventas)
         setVentas([])
       }
 
       setPagination(data.pagination || null)
     } catch (error) {
-      console.error("🔴 Error al obtener ventas:", error)
       setVentas([])
     } finally {
       setLoading(false)
@@ -76,12 +73,28 @@ export default function VentasPage() {
       const res = await fetch(`/api/ventas/${id}`, { method: "DELETE" })
       if (res.ok) {
         fetchVentas()
-      } else {
-        console.error("🔴 No se pudo eliminar la venta")
       }
-    } catch (error) {
-      console.error("🔴 Error eliminando venta:", error)
+    } catch (error) {}
+  }
+
+  // Helper para mostrar el estado de pago
+  const renderEstadoPago = (metodo_pago?: string) => {
+    if (!metodo_pago) return null
+    if (["efectivo", "tarjeta", "transferencia"].includes(metodo_pago)) {
+      return (
+        <span className="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold ml-2">
+          Pagado
+        </span>
+      )
     }
+    if (metodo_pago === "credito") {
+      return (
+        <span className="inline-block px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold ml-2">
+          Pendiente
+        </span>
+      )
+    }
+    return null
   }
 
   return (
@@ -156,6 +169,7 @@ export default function VentasPage() {
                           <h3 className="text-sm font-medium text-gray-900 truncate">
                             {venta.cliente_nombre || "Sin nombre"} {venta.cliente_apellido || ""}
                           </h3>
+                          {renderEstadoPago(venta.metodo_pago)}
                         </div>
                         <div className="mt-1 text-sm text-gray-500 flex flex-col gap-1">
                           <span>

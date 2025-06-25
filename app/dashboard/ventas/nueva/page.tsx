@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Trash2 } from "lucide-react"
 
-
 interface Producto {
   id_producto: number
   nombre: string
@@ -36,6 +35,7 @@ export default function NuevaVentaPage() {
   const [id_cliente, setIdCliente] = useState("")
   const [metodo_pago, setMetodoPago] = useState("efectivo")
   const [montoRecibido, setMontoRecibido] = useState("")
+  const [nota, setNota] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -83,16 +83,50 @@ export default function NuevaVentaPage() {
     }, 0)
 
   const total = calcularTotal()
+  const totalConImpuesto = total * 1.18
   const vuelto =
     metodo_pago === "efectivo" && parseFloat(montoRecibido) > 0
-      ? parseFloat(montoRecibido) - total * 1.18
+      ? parseFloat(montoRecibido) - totalConImpuesto
       : null
+
+  // Validaciones
+  const isEfectivoInsuficiente =
+    metodo_pago === "efectivo" &&
+    (montoRecibido.trim() === "" || parseFloat(montoRecibido) < totalConImpuesto)
+
+  const isTransferenciaInvalida =
+    metodo_pago === "transferencia" &&
+    (!/^\d{12}$/.test(montoRecibido))
+
+  const isTarjetaInvalida =
+    metodo_pago === "tarjeta" &&
+    (montoRecibido.trim().length !== 4 || !/^\d+$/.test(montoRecibido))
+
+  const isNotaCreditoInvalida =
+    metodo_pago === "credito" && nota.trim() === ""
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setLoading(true)
 
+    if (metodo_pago === "efectivo" && (montoRecibido.trim() === "" || parseFloat(montoRecibido) < totalConImpuesto)) {
+      setError("El monto recibido en efectivo es menor al total a pagar.")
+      return
+    }
+    if (metodo_pago === "transferencia" && !/^\d{12}$/.test(montoRecibido)) {
+      setError("El ID de transferencia debe ser exactamente 12 dígitos numéricos.")
+      return
+    }
+    if (metodo_pago === "tarjeta" && (montoRecibido.trim().length !== 4 || !/^\d+$/.test(montoRecibido))) {
+      setError("Los últimos 4 dígitos de la tarjeta deben ser numéricos.")
+      return
+    }
+    if (metodo_pago === "credito" && nota.trim() === "") {
+      setError("Debe ingresar una observación o nota para la venta a crédito.")
+      return
+    }
+
+    setLoading(true)
     try {
       const payload: any = {
         id_cliente: parseInt(id_cliente),
@@ -108,6 +142,8 @@ export default function NuevaVentaPage() {
         payload.id_transferencia = montoRecibido
       } else if (metodo_pago === "tarjeta") {
         payload.ultimos4 = montoRecibido
+      } else if (metodo_pago === "credito") {
+        payload.nota = nota
       }
 
       const res = await fetch("/api/ventas", {
@@ -163,6 +199,7 @@ export default function NuevaVentaPage() {
                   <option value="efectivo">Efectivo</option>
                   <option value="tarjeta">Tarjeta</option>
                   <option value="transferencia">Transferencia</option>
+                  <option value="credito">Crédito</option>
                 </select>
               </div>
 
@@ -172,26 +209,39 @@ export default function NuevaVentaPage() {
                     ? "ID de Transferencia"
                     : metodo_pago === "tarjeta"
                     ? "Últimos 4 dígitos"
+                    : metodo_pago === "credito"
+                    ? "Observación o Nota"
                     : "Monto recibido"}
                 </Label>
-                <Input
-                  type={metodo_pago === "efectivo" ? "number" : "text"}
-                  value={montoRecibido}
-                  onChange={(e) => setMontoRecibido(e.target.value)}
-                  required={metodo_pago !== "efectivo"}
-                  placeholder={
-                    metodo_pago === "transferencia"
-                      ? "ID de referencia"
-                      : metodo_pago === "tarjeta"
-                      ? "Ej: 1234"
-                      : "C$0.00"
-                  }
-                  maxLength={metodo_pago === "tarjeta" ? 4 : undefined}
-                  pattern={metodo_pago === "tarjeta" ? "\\d*" : undefined}
-                />
+                {metodo_pago === "credito" ? (
+                  <Input
+                    type="text"
+                    value={nota}
+                    onChange={(e) => setNota(e.target.value)}
+                    required={metodo_pago === "credito"}
+                    placeholder="Ingrese una observación o nota"
+                  />
+                ) : (
+                  <Input
+                    type={metodo_pago === "efectivo" ? "number" : "text"}
+                    value={montoRecibido}
+                    onChange={(e) => setMontoRecibido(e.target.value)}
+                    required={metodo_pago !== "efectivo"}
+                    placeholder={
+                      metodo_pago === "transferencia"
+                        ? "ID de referencia (12 dígitos)"
+                        : metodo_pago === "tarjeta"
+                        ? "Ej: 1234"
+                        : "C$0.00"
+                    }
+                    maxLength={metodo_pago === "transferencia" ? 12 : metodo_pago === "tarjeta" ? 4 : undefined}
+                    pattern={metodo_pago === "transferencia" ? "\\d{12}" : metodo_pago === "tarjeta" ? "\\d*" : undefined}
+                    inputMode={metodo_pago === "transferencia" || metodo_pago === "tarjeta" ? "numeric" : undefined}
+                  />
+                )}
               </div>
             </div>
-                        <div className="space-y-4">
+            <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="grid grid-cols-3 gap-3 items-end">
                   <div>
@@ -222,23 +272,31 @@ export default function NuevaVentaPage() {
                     />
                   </div>
 
-                  <div>
-                    <Label>Precio unitario</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={item.precio_unitario}
-                      onChange={(e) => handleItemChange(index, "precio_unitario", e.target.value)}
-                      required
-                    />
+                  <div className="flex items-end gap-2">
+                    <div className="flex-1">
+                      <Label>Precio unitario</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.precio_unitario}
+                        onChange={(e) => handleItemChange(index, "precio_unitario", e.target.value)}
+                        required
+                      />
+                    </div>
+                    {items.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => eliminarItem(index)}
+                        className="mb-1"
+                        aria-label="Quitar producto"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    )}
                   </div>
-
-                  {items.length > 1 && (
-                    <Button type="button" variant="destructive" onClick={() => eliminarItem(index)}>
-                      Quitar
-                    </Button>
-                  )}
                 </div>
               ))}
 
@@ -250,7 +308,7 @@ export default function NuevaVentaPage() {
             <div className="text-sm text-muted-foreground">
               <p>Subtotal: C${total.toFixed(2)}</p>
               <p>Impuesto (18%): C${(total * 0.18).toFixed(2)}</p>
-              <p><strong>Total: C${(total * 1.18).toFixed(2)}</strong></p>
+              <p><strong>Total: C${totalConImpuesto.toFixed(2)}</strong></p>
               {vuelto !== null && (
                 <p className={`font-semibold ${vuelto < 0 ? "text-red-600" : "text-green-600"}`}>
                   {vuelto < 0
@@ -268,8 +326,10 @@ export default function NuevaVentaPage() {
                 className="w-full"
                 disabled={
                   loading ||
-                  (metodo_pago === "transferencia" && montoRecibido.trim() === "") ||
-                  (metodo_pago === "tarjeta" && (montoRecibido.trim().length !== 4 || !/^\d+$/.test(montoRecibido)))
+                  (metodo_pago === "transferencia" && isTransferenciaInvalida) ||
+                  (metodo_pago === "tarjeta" && isTarjetaInvalida) ||
+                  isEfectivoInsuficiente ||
+                  isNotaCreditoInvalida
                 }
               >
                 {loading ? "Registrando..." : "Registrar Venta"}
