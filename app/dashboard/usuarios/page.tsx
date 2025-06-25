@@ -1,12 +1,30 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
+import { useRouter } from "next/navigation"
+import { Plus, Search, MoreVertical } from "lucide-react"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody
+} from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "@/components/ui/dropdown-menu"
 
 interface Usuario {
   id_usuario: number
@@ -19,156 +37,124 @@ interface Usuario {
 }
 
 export default function UsuariosPage() {
+  const router = useRouter()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
-  const [loading, setLoading] = useState(false)
-  const [nuevo, setNuevo] = useState({
-    nombre: "",
-    apellido: "",
-    email: "",
-    usuario: "",
-    contrasena: "",
-    telefono: "",
-    direccion: "",
-    id_rol: 1,
-  })
-
-  const cargarUsuarios = async () => {
-    try {
-      const res = await fetch("/api/usuarios")
-      const data = await res.json()
-      if (Array.isArray(data)) {
-        setUsuarios(data)
-      } else {
-        console.error("Respuesta no esperada:", data)
-        setUsuarios([])
-      }
-    } catch (err) {
-      console.error("Error cargando usuarios:", err)
-    }
-  }
+  const [search, setSearch] = useState("")
 
   useEffect(() => {
-    cargarUsuarios()
-  }, [])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNuevo({ ...nuevo, [e.target.name]: e.target.value })
-  }
-
-  const crearUsuario = async () => {
-    const camposObligatorios = ["nombre", "apellido", "email", "usuario", "contrasena"]
-    for (const campo of camposObligatorios) {
-      const valor = nuevo[campo as keyof typeof nuevo]
-      if (typeof valor === "string" ? !valor.trim() : !valor) {
-        toast.warning(`El campo "${campo}" es obligatorio.`)
-        return
+    const obtenerUsuarios = async () => {
+      try {
+        const res = await fetch("/api/usuarios")
+        const data = await res.json()
+        setUsuarios(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error("Error al obtener usuarios:", error)
       }
     }
 
-    try {
-      setLoading(true)
-      const res = await fetch("/api/usuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevo),
-      })
-      if (!res.ok) throw new Error("Error al crear usuario")
+    obtenerUsuarios()
+  }, [])
 
-      toast.success("✅ Usuario registrado con éxito")
-      setNuevo({
-        nombre: "",
-        apellido: "",
-        email: "",
-        usuario: "",
-        contrasena: "",
-        telefono: "",
-        direccion: "",
-        id_rol: 1,
-      })
-      cargarUsuarios()
-    } catch (err) {
-      console.error(err)
-      toast.error("❌ Ocurrió un error al crear el usuario.")
-    } finally {
-      setLoading(false)
-    }
-  }
+  const usuariosFiltrados = usuarios.filter(
+    (u) =>
+      u.nombre.toLowerCase().includes(search.toLowerCase()) ||
+      u.apellido.toLowerCase().includes(search.toLowerCase()) ||
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.usuario.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-6">
-      {/* Formulario */}
+    <div className="space-y-6 py-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
+          <p className="text-muted-foreground">Gestión de usuarios registrados en el sistema</p>
+        </div>
+        <Button
+          className="bg-orange-500 hover:bg-orange-600"
+          onClick={() => router.push("/dashboard/usuarios/nuevo")}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Nuevo Usuario
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Registrar Nuevo Usuario</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Nombre</Label>
-              <Input name="nombre" value={nuevo.nombre} onChange={handleChange} placeholder="Juan" autoComplete="given-name" />
-            </div>
-            <div>
-              <Label>Apellido</Label>
-              <Input name="apellido" value={nuevo.apellido} onChange={handleChange} placeholder="Pérez" autoComplete="family-name" />
-            </div>
-            <div>
-              <Label>Email</Label>
-              <Input name="email" value={nuevo.email} onChange={handleChange} placeholder="correo@ejemplo.com" autoComplete="email" />
-            </div>
-            <div>
-              <Label>Usuario</Label>
-              <Input name="usuario" value={nuevo.usuario} onChange={handleChange} placeholder="usuario123" />
-            </div>
-            <div>
-              <Label>Contraseña</Label>
-              <Input name="contrasena" type="password" value={nuevo.contrasena} onChange={handleChange} autoComplete="new-password" />
-            </div>
-            <div>
-              <Label>Teléfono</Label>
-              <Input name="telefono" value={nuevo.telefono} onChange={handleChange} placeholder="8888-8888" />
-            </div>
-            <div className="md:col-span-2">
-              <Label>Dirección</Label>
-              <Input name="direccion" value={nuevo.direccion} onChange={handleChange} placeholder="Ciudad, barrio..." />
-            </div>
+          <CardTitle>Lista de Usuarios</CardTitle>
+          <div className="flex items-center space-x-2 mt-4">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, usuario o email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-sm"
+            />
           </div>
-
-          <Button onClick={crearUsuario} className="w-full" disabled={loading}>
-            {loading ? "Registrando..." : "Registrar usuario"}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Tabla */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Usuarios activos</CardTitle>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          {usuarios.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay usuarios registrados.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Usuario</TableHead>
-                  <TableHead>Rol</TableHead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Correo</TableHead>
+                <TableHead>Usuario</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {usuariosFiltrados.map((u) => (
+                <TableRow key={u.id_usuario}>
+                  <TableCell>{u.nombre} {u.apellido}</TableCell>
+                  <TableCell>{u.email}</TableCell>
+                  <TableCell>{u.usuario}</TableCell>
+                  <TableCell>{u.rol}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/dashboard/usuarios/${u.id_usuario}/editar`)}>
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            const confirmado = confirm(`¿Eliminar a ${u.nombre} ${u.apellido}?`)
+                            if (!confirmado) return
+                            try {
+                              const res = await fetch(`/api/usuarios/${u.id_usuario}`, {
+                                method: "DELETE"
+                              })
+                              if (!res.ok) throw new Error()
+                              setUsuarios((prev) =>
+                                prev.filter((user) => user.id_usuario !== u.id_usuario)
+                              )
+                            } catch (error) {
+                              console.error("Error al eliminar usuario:", error)
+                              alert("No se pudo eliminar el usuario.")
+                            }
+                          }}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {usuarios.map((u) => (
-                  <TableRow key={u.id_usuario}>
-                    <TableCell>{u.nombre} {u.apellido}</TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>{u.usuario}</TableCell>
-                    <TableCell>{u.rol}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+              {usuariosFiltrados.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                    No se encontraron usuarios.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
