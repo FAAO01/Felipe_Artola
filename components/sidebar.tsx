@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Package, ShoppingCart, Users, Store, Settings, LogOut, Tag, Truck } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, Users, Store, Settings, LogOut, Tag, Truck, FileText } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -13,6 +13,7 @@ const navigation = [
   { name: "Proveedores", href: "/dashboard/proveedores", icon: Truck },
   { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
   { name: "Clientes", href: "/dashboard/clientes", icon: Users },
+  { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 
@@ -57,16 +58,17 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="p-4 border-t">
-        <Button
-          onClick={handleLogout}
-          variant="ghost"
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-        >
-          <LogOut className="mr-3 h-5 w-5" />
-          Cerrar Sesión
-        </Button>
-      </div>
+<div className="p-4 border-t">
+  <Button
+    onClick={handleLogout}
+    variant="ghost"
+    className="w-full justify-start bg-red-600 text-white hover:bg-red-700"
+  >
+    <LogOut className="mr-3 h-5 w-5" />
+    Cerrar Sesión
+  </Button>
+</div>
+
     </div>
   )
 }
