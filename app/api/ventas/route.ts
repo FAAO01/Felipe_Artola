@@ -47,7 +47,15 @@ export async function GET(request: NextRequest) {
 // POST /api/ventas
 export async function POST(request: NextRequest) {
   try {
-    const { id_cliente, metodo_pago, productos } = await request.json()
+    const {
+      id_cliente,
+      metodo_pago,
+      productos,
+      id_transferencia,
+      ultimos4,
+      monto_recibido,
+      nota,
+    } = await request.json()
 
     if (!id_cliente || !metodo_pago || !Array.isArray(productos) || productos.length === 0) {
       return NextResponse.json({ error: "Datos incompletos o inválidos." }, { status: 400 })
@@ -93,15 +101,30 @@ export async function POST(request: NextRequest) {
     const total = subtotal + impuesto
     const numeroFactura = `F${Date.now()}`
 
-    // Insertar venta principal
+    // Nuevo INSERT con campos adicionales
     const ventaResult = await executeQuery(
       `
       INSERT INTO ventas (
         id_cliente, id_usuario, numero_factura, fecha_venta,
-        subtotal, impuesto, total, metodo_pago, usuario_creacion
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)
+        subtotal, impuesto, total, metodo_pago,
+        id_transferencia, ultimos4, monto_recibido, nota,
+        usuario_creacion
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [id_cliente, 1, numeroFactura, subtotal, impuesto, total, metodo_pago, 1]
+      [
+        id_cliente,
+        1, // id_usuario (estático o autenticado)
+        numeroFactura,
+        subtotal,
+        impuesto,
+        total,
+        metodo_pago,
+        id_transferencia || null,
+        ultimos4 || null,
+        monto_recibido || null,
+        nota || null,
+        1 // usuario_creacion
+      ]
     )
 
     const id_venta = (ventaResult as any)?.insertId
@@ -139,6 +162,31 @@ export async function POST(request: NextRequest) {
     console.error("Error registrando venta:", error.message, error)
     return NextResponse.json(
       { error: "Error al registrar venta", detalle: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/ventas?id=123
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+    if (!id) {
+      return NextResponse.json({ error: "ID de venta requerido" }, { status: 400 })
+    }
+
+    // Soft delete: marcamos la venta como eliminada
+    await executeQuery(
+      `UPDATE ventas SET eliminado = 1 WHERE id_venta = ?`,
+      [id]
+    )
+
+    return NextResponse.json({ message: "Venta eliminada correctamente" })
+  } catch (error: any) {
+    console.error("Error eliminando venta:", error.message, error)
+    return NextResponse.json(
+      { error: "Error al eliminar venta", detalle: error.message },
       { status: 500 }
     )
   }

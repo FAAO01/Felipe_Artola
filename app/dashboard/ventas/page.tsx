@@ -20,7 +20,7 @@ interface Venta {
   cliente_apellido: string
   total: number
   fecha_venta: string
-  metodo_pago?: string // <-- Asegúrate que tu API retorna esto
+  metodo_pago?: string
 }
 
 interface Pagination {
@@ -40,6 +40,7 @@ export default function VentasPage() {
 
   useEffect(() => {
     fetchVentas()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, page])
 
   const fetchVentas = async () => {
@@ -95,6 +96,11 @@ export default function VentasPage() {
       )
     }
     return null
+  }
+
+  // Lógica para imprimir
+  const handleImprimirVenta = (id: number) => {
+    window.open(`/dashboard/ventas/${id}/imprimir`, "_blank")
   }
 
   return (
@@ -193,6 +199,12 @@ export default function VentasPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => router.push(`/dashboard/ventas/${venta.id_venta}`)}>
+                          Ver detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleImprimirVenta(venta.id_venta)}>
+                          Imprimir
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => router.push(`/dashboard/ventas/${venta.id_venta}/editar`)}>
                           Editar
                         </DropdownMenuItem>
