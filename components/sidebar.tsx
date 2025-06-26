@@ -5,18 +5,18 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, Package, ShoppingCart, Users, Store, Settings, LogOut, Tag, Truck, FileText, Database } from "lucide-react"
-import { data } from "autoprefixer"
+//import { data } from "autoprefixer"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Productos", href: "/dashboard/productos", icon: Package },
   { name: "Categorías", href: "/dashboard/categorias", icon: Tag },
   { name: "Proveedores", href: "/dashboard/proveedores", icon: Truck },
-  { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
+  { name: "Productos", href: "/dashboard/productos", icon: Package },
   { name: "Clientes", href: "/dashboard/clientes", icon: Users },
+  { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
+  { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
   { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
   { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
-  { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 

@@ -13,6 +13,24 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
+// Paleta de colores reutilizable
+const COLORS = [
+  "rgba(8, 72, 234, 0.8)",
+  "rgba(34,197,94,0.8)",
+  "rgba(59,130,246,0.8)",
+  "rgba(234,179,8,0.8)",
+  "rgba(239,68,68,0.8)",
+  "rgba(168,85,247,0.8)",
+  "rgba(250,204,21,0.8)",
+  "rgba(16,185,129,0.8)",
+  "rgba(251,113,133,0.8)",
+  "rgba(99,102,241,0.8)",
+]
+
+function getBarColors(length: number) {
+  return Array.from({ length }, (_, i) => COLORS[i % COLORS.length])
+}
+
 export default function MostSoldProductsChart() {
   const [labels, setLabels] = useState<string[]>([])
   const [dataPoints, setDataPoints] = useState<number[]>([])
@@ -24,7 +42,6 @@ export default function MostSoldProductsChart() {
       try {
         setLoading(true)
         setError(null)
-        // CORREGIDO: la ruta debe ser /api/dashboard/mas-vendidos
         const res = await fetch("/api/dashboard/mas-vendidos")
         if (!res.ok) throw new Error("Error al obtener datos")
         const json = await res.json()
@@ -45,7 +62,7 @@ export default function MostSoldProductsChart() {
       {
         label: "Ventas",
         data: dataPoints,
-        backgroundColor: "rgb(0, 225, 255)",
+        backgroundColor: getBarColors(dataPoints.length),
       },
     ],
   }
@@ -53,38 +70,24 @@ export default function MostSoldProductsChart() {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: true,
-      },
+      legend: { display: false },
+      tooltip: { enabled: true },
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: "Producto",
-        },
-        ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 0,
-        },
+        title: { display: true, text: "Producto" },
+        ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 },
       },
       y: {
-        title: {
-          display: true,
-          text: "Cantidad Vendida",
-        },
+        title: { display: true, text: "Cantidad Vendida" },
         beginAtZero: true,
       },
     },
   }
 
-  if (loading) return <div>Cargando...</div>
-  if (error) return <div>Error: {error}</div>
-  if (dataPoints.length === 0) return <div>No hay productos vendidos aún.</div>
+  if (loading) return <div style={{ textAlign: "center" }}>Cargando...</div>
+  if (error) return <div style={{ textAlign: "center" }}>Error: {error}</div>
+  if (dataPoints.length === 0) return <div style={{ textAlign: "center" }}>No hay productos vendidos aún.</div>
 
   return <Bar data={data} options={options} />
 }
