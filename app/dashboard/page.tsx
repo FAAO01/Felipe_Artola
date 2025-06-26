@@ -2,7 +2,7 @@ import DashboardStats from "@/components/dashboard-stats"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import MostSoldProductsChart from "@/components/charts/most-sold-products-chart"
 import TopCategoryChart from "@/components/charts/top-category-chart"
-import MonthlyCopiesChart from "@/components/charts/monthly-copies-chart"
+import MonthlyCopiesChart from "@/components/charts/top-clientes-chart"
 import StockByProductChart from "@/components/charts/stock-by-product-chart"
 
 export default function Dashboard() {
@@ -36,7 +36,7 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Mes con más copias de seguridad</CardTitle>
+            <CardTitle>Clientes con más compras</CardTitle>
           </CardHeader>
           <CardContent className="h-56">
             <MonthlyCopiesChart />

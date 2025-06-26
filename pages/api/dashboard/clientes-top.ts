@@ -4,23 +4,21 @@ import { executeQuery } from "@/lib/database"
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const resultados = await executeQuery(`
-      SELECT c.nombre AS categoria, SUM(dv.cantidad) AS total_vendidos
-      FROM detalle_ventas dv
-      JOIN productos p ON p.id_producto = dv.id_producto
-      JOIN categorias c ON c.id_categoria = p.id_categoria
+      SELECT c.nombre AS cliente, COUNT(v.id_venta) AS compras
+      FROM ventas v
+      JOIN clientes c ON c.id_cliente = v.id_cliente
       GROUP BY c.nombre
-      ORDER BY total_vendidos DESC
+      ORDER BY compras DESC
       LIMIT 5
     `)
 
     const rows = Array.isArray(resultados) ? resultados : []
-    const labels = rows.map((r: any) => r.categoria)
-    const data = rows.map((r: any) => r.total_vendidos)
+    const labels = rows.map((r: any) => r.cliente)
+    const data = rows.map((r: any) => Number(r.compras))
 
     res.status(200).json({ labels, data })
-  } catch (error) {
-    console.error("Error obteniendo categorías más vendidas:", error)
+  } catch (error: any) {
+    console.error("Error obteniendo clientes top:", error)
     res.status(500).json({ error: "Error al obtener datos" })
   }
 }
-

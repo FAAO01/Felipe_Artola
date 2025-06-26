@@ -16,6 +16,7 @@ export default async function handler(
       JOIN productos p ON p.id_producto = dv.id_producto
       GROUP BY p.nombre
       ORDER BY total_vendidos DESC
+      LIMIT 5
     `)
 
     const rows = Array.isArray(resultados) ? resultados : []

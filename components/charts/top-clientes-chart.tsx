@@ -13,7 +13,26 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
-export default function TopCategoryChart() {
+// Paleta de colores para las barras
+const COLORS = [
+  "rgba(8, 72, 234, 0.8)",
+  "rgba(34,197,94,0.8)",
+  "rgba(59,130,246,0.8)",
+  "rgba(234,179,8,0.8)",
+  "rgba(239,68,68,0.8)",
+  "rgba(168,85,247,0.8)",
+  "rgba(250,204,21,0.8)",
+  "rgba(16,185,129,0.8)",
+  "rgba(251,113,133,0.8)",
+  "rgba(99,102,241,0.8)",
+]
+
+function getBarColors(length: number) {
+  // Si hay más barras que colores, repite la paleta
+  return Array.from({ length }, (_, i) => COLORS[i % COLORS.length])
+}
+
+export default function TopClientesChart() {
   const [labels, setLabels] = useState<string[]>([])
   const [dataPoints, setDataPoints] = useState<number[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,7 +43,7 @@ export default function TopCategoryChart() {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch("/api/dashboard/stock")
+        const res = await fetch("/api/dashboard/clientes-top")
         if (!res.ok) throw new Error("Error al obtener datos")
         const json = await res.json()
         setLabels(json.labels)
@@ -42,15 +61,9 @@ export default function TopCategoryChart() {
     labels,
     datasets: [
       {
-        label: "Stock por Categoría",
+        label: "Compras realizadas",
         data: dataPoints,
-        backgroundColor: [
-          "rgba(34,197,94,0.7)",
-          "rgba(59,130,246,0.7)",
-          "rgba(234,179,8,0.7)",
-          "rgba(239,68,68,0.7)",
-          "rgba(168,85,247,0.7)",
-        ],
+        backgroundColor: getBarColors(dataPoints.length),
       },
     ],
   }
@@ -58,38 +71,24 @@ export default function TopCategoryChart() {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: true,
-      },
+      legend: { display: false },
+      tooltip: { enabled: true },
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: "Categoría",
-        },
-        ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 0,
-        },
+        title: { display: true, text: "Cliente" },
+        ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 },
       },
       y: {
-        title: {
-          display: true,
-          text: "Stock disponible",
-        },
+        title: { display: true, text: "Cantidad de compras" },
         beginAtZero: true,
       },
     },
   }
 
-  if (loading) return <div>Cargando...</div>
-  if (error) return <div>Error: {error}</div>
-  if (dataPoints.length === 0) return <div>No hay datos de stock por categoría.</div>
+  if (loading) return <div style={{ textAlign: "center" }}>Cargando...</div>
+  if (error) return <div style={{ textAlign: "center" }}>Error: {error}</div>
+  if (dataPoints.length === 0) return <div style={{ textAlign: "center" }}>No hay clientes con compras registradas.</div>
 
   return <Bar data={data} options={options} />
 }
