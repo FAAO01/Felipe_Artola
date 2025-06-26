@@ -19,7 +19,7 @@ export default function StockByProductChart() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await fetch("/api/dashboard/stock")
+      const res = await fetch("/api/dashboard/categorias-vendidas")
       const json = await res.json()
       setLabels(json.labels)
       setDataPoints(json.data)
@@ -31,9 +31,9 @@ export default function StockByProductChart() {
     labels,
     datasets: [
       {
-        label: "Unidades en stock",
+        label: "Unidades vendidas por categoría",
         data: dataPoints,
-        backgroundColor: "rgba(16,185,129,0.7)",
+        backgroundColor: "rgba(59,130,246,0.7)",
       },
     ],
   }

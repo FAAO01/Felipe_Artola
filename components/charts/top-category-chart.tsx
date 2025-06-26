@@ -14,13 +14,24 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 export default function TopCategoryChart() {
   const [labels, setLabels] = useState<string[]>([])
   const [dataPoints, setDataPoints] = useState<number[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchData() {
-      const res = await fetch("/api/dashboard/categorias-vendidas")
-      const json = await res.json()
-      setLabels(json.labels)
-      setDataPoints(json.data)
+      try {
+        setLoading(true)
+        setError(null)
+        const res = await fetch("/api/dashboard/stock")
+        if (!res.ok) throw new Error("Error al obtener datos")
+        const json = await res.json()
+        setLabels(json.labels)
+        setDataPoints(json.data)
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [])
@@ -29,7 +40,7 @@ export default function TopCategoryChart() {
     labels,
     datasets: [
       {
-        label: "Categorías",
+        label: "Stock por Categoría",
         data: dataPoints,
         backgroundColor: [
           "rgba(34,197,94,0.7)",
@@ -41,6 +52,10 @@ export default function TopCategoryChart() {
       },
     ],
   }
+
+  if (loading) return <div>Cargando...</div>
+  if (error) return <div>Error: {error}</div>
+  if (dataPoints.length === 0) return <div>No hay datos de stock por categoría.</div>
 
   return <Pie data={data} />
 }
