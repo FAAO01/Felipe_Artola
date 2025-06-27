@@ -44,9 +44,19 @@ export default function Page() {
   const mostrar = (v: any) =>
     new Intl.NumberFormat("es-NI", { minimumFractionDigits: 2 }).format(Number(v ?? 0))
 
-  const subtotal = venta?.productos.reduce((acc, p) => acc + p.subtotal, 0) ?? 0
-  const impuesto = subtotal * 0.18
-  const total = subtotal + impuesto
+  // Función segura para parsear números
+  const parseNumber = (value: any) => {
+    const num = Number(value)
+    return isNaN(num) ? 0 : num
+  }
+
+  // Asegurar que todos los valores sean números válidos antes de calcular
+  const subtotal = venta?.productos.reduce((acc, p) => {
+    return acc + parseNumber(p.subtotal)
+  }, 0) ?? 0
+
+  const impuesto = parseNumber(subtotal) * 0.18
+  const total = parseNumber(subtotal) + parseNumber(impuesto)
 
   if (!venta) return null
 
