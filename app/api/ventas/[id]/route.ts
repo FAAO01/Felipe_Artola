@@ -16,6 +16,8 @@ export async function GET(
           v.id_cliente,
           v.fecha_venta AS fecha_venta,
           v.metodo_pago,
+          v.abono,
+          v.saldo_pendiente,
           CONCAT(c.nombre, ' ', c.apellido) AS cliente,
           p.id_producto,
           p.nombre AS producto,
@@ -40,6 +42,8 @@ export async function GET(
       id_cliente: resultado[0].id_cliente,
       fecha: resultado[0].fecha_venta,
       metodo_pago: resultado[0].metodo_pago,
+      abono: resultado[0].abono,
+      saldo_pendiente: resultado[0].saldo_pendiente,
       cliente: resultado[0].cliente,
       productos: resultado.map((r) => ({
         id_producto: r.id_producto,
@@ -57,6 +61,55 @@ export async function GET(
       { error: "Error interno del servidor" },
       { status: 500 }
     )
+  }
+}
+
+// PUT /api/ventas/[id]
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+    const {
+      id_cliente,
+      metodo_pago,
+      productos,
+      abono = 0
+    } = await request.json()
+
+    const subtotal = productos.reduce(
+      (acc: number, p: any) => acc + p.cantidad * p.precio_unitario,
+      0
+    )
+    const impuesto = subtotal * 0.18
+    const total = subtotal + impuesto
+    const saldo_pendiente = metodo_pago === "credito" ? total - abono : 0
+
+    await executeQuery(
+      `
+      UPDATE ventas
+      SET id_cliente = ?, metodo_pago = ?, subtotal = ?, impuesto = ?, total = ?, abono = ?, saldo_pendiente = ?
+      WHERE id_venta = ?
+      `,
+      [id_cliente, metodo_pago, subtotal, impuesto, total, abono, saldo_pendiente, id]
+    )
+
+    await executeQuery(`DELETE FROM detalle_ventas WHERE id_venta = ?`, [id])
+
+    for (const p of productos) {
+      const itemSubtotal = p.cantidad * p.precio_unitario
+      await executeQuery(
+        `INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario, subtotal, usuario_creacion)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [id, p.id_producto, p.cantidad, p.precio_unitario, itemSubtotal, 1]
+      )
+    }
+
+    return NextResponse.json({ message: "Venta actualizada correctamente." })
+  } catch (error: any) {
+    console.error("Error al actualizar venta:", error.message)
+    return NextResponse.json({ error: "Error al actualizar venta" }, { status: 500 })
   }
 }
 

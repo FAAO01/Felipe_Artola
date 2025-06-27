@@ -19,6 +19,7 @@ interface Venta {
   cliente_nombre: string
   cliente_apellido: string
   total: number
+  abono: number // Asegúrate de que el abono esté disponible en la respuesta
   fecha_venta: string
   metodo_pago?: string
 }
@@ -79,23 +80,21 @@ export default function VentasPage() {
   }
 
   // Helper para mostrar el estado de pago
-  const renderEstadoPago = (metodo_pago?: string) => {
-    if (!metodo_pago) return null
-    if (["efectivo", "tarjeta", "transferencia"].includes(metodo_pago)) {
+  const renderEstadoPago = (venta: Venta) => {
+    const saldoPendiente = venta.total - venta.abono; // Calcular el saldo pendiente
+    if (saldoPendiente <= 0) {
       return (
         <span className="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold ml-2">
           Pagado
         </span>
       )
-    }
-    if (metodo_pago === "credito") {
+    } else {
       return (
         <span className="inline-block px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold ml-2">
           Pendiente
         </span>
       )
     }
-    return null
   }
 
   // Lógica para imprimir
@@ -175,7 +174,7 @@ export default function VentasPage() {
                           <h3 className="text-sm font-medium text-gray-900 truncate">
                             {venta.cliente_nombre || "Sin nombre"} {venta.cliente_apellido || ""}
                           </h3>
-                          {renderEstadoPago(venta.metodo_pago)}
+                          {renderEstadoPago(venta)}
                         </div>
                         <div className="mt-1 text-sm text-gray-500 flex flex-col gap-1">
                           <span>

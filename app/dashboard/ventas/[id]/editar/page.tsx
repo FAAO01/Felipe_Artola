@@ -38,8 +38,11 @@ export default function EditarVentaPage() {
   const [metodo_pago, setMetodoPago] = useState("efectivo")
   const [montoRecibido, setMontoRecibido] = useState("")
   const [nota, setNota] = useState("")
+  const [abono, setAbono] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  const EPSILON = 0.01
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -69,6 +72,7 @@ export default function EditarVentaPage() {
             ? String(venta.monto_recibido ?? "")
             : ""
         )
+        setAbono(String(venta.abono ?? ""))
         setItems(
           venta.productos.map((item: any) => ({
             id_producto: String(item.id_producto),
@@ -83,7 +87,8 @@ export default function EditarVentaPage() {
 
     cargarDatos()
   }, [id])
-    const handleItemChange = (index: number, field: keyof ItemVenta, value: string) => {
+
+  const handleItemChange = (index: number, field: keyof ItemVenta, value: string) => {
     const nuevosItems = [...items]
     nuevosItems[index][field] = value
     if (field === "id_producto") {
@@ -155,6 +160,22 @@ export default function EditarVentaPage() {
       return
     }
 
+    if (
+      metodo_pago === "credito" &&
+      (abono.trim() === "" || isNaN(parseFloat(abono)))
+    ) {
+      setError("Debe ingresar un abono válido.")
+      return
+    }
+
+    if (
+      metodo_pago === "credito" &&
+      parseFloat(abono) - totalConImpuesto > EPSILON
+    ) {
+      setError(`El abono no puede ser mayor al total de la venta (C$${totalConImpuesto.toFixed(2)}).`)
+      return
+    }
+
     setLoading(true)
     try {
       const payload: any = {
@@ -169,10 +190,11 @@ export default function EditarVentaPage() {
 
       if (metodo_pago === "transferencia") payload.id_transferencia = montoRecibido
       else if (metodo_pago === "tarjeta") payload.ultimos4 = montoRecibido
-      else if (metodo_pago === "credito") payload.nota = nota
+      else if (metodo_pago === "credito") {
+        payload.nota = nota
+        payload.abono = parseFloat(abono)
+      }
       else if (metodo_pago === "efectivo") payload.monto_recibido = parseFloat(montoRecibido)
-
-      console.log("Payload enviado:", payload)
 
       const res = await fetch(`/api/ventas/${id}`, {
         method: "PUT",
@@ -190,7 +212,8 @@ export default function EditarVentaPage() {
       setLoading(false)
     }
   }
-    return (
+
+  return (
     <div className="w-full px-6 py-6">
       <Card className="w-full">
         <CardHeader>
@@ -216,7 +239,7 @@ export default function EditarVentaPage() {
               </select>
             </div>
 
-            {/* Método de pago y campo relacionado */}
+            {/* Método de pago */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Método de pago</Label>
@@ -248,7 +271,7 @@ export default function EditarVentaPage() {
                     value={nota}
                     onChange={(e) => setNota(e.target.value)}
                     required
-                    placeholder="Ingrese una observación o nota"
+                    placeholder="Ingrese una observación"
                   />
                 ) : (
                   <Input
@@ -258,7 +281,7 @@ export default function EditarVentaPage() {
                     required={metodo_pago !== "efectivo"}
                     placeholder={
                       metodo_pago === "transferencia"
-                        ? "ID de referencia (12 dígitos)"
+                        ? "ID (12 dígitos)"
                         : metodo_pago === "tarjeta"
                         ? "Ej: 1234"
                         : "C$0.00"
@@ -281,7 +304,26 @@ export default function EditarVentaPage() {
               </div>
             </div>
 
-            {/* Lista de productos */}
+            {/* Campo de abono si es crédito */}
+            {metodo_pago === "credito" && (
+              <div>
+                <Label>Abono recibido</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max={Number(totalConImpuesto.toFixed(2))}
+                  step="0.01"
+                  value={abono}
+                  onChange={(e) => setAbono(e.target.value)}
+                  placeholder="Ingrese el abono"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Saldo pendiente: C${(totalConImpuesto - Number(abono || 0)).toFixed(2)}
+                </p>
+              </div>
+            )}
+
+            {/* Productos */}
             <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="grid grid-cols-3 gap-3 items-end">
@@ -310,7 +352,6 @@ export default function EditarVentaPage() {
                       value={item.cantidad}
                       onChange={(e) => handleItemChange(index, "cantidad", e.target.value)}
                       required
-                      className="w-full"
                     />
                   </div>
 
@@ -322,9 +363,10 @@ export default function EditarVentaPage() {
                         min="0"
                         step="0.01"
                         value={item.precio_unitario}
-                        onChange={(e) => handleItemChange(index, "precio_unitario", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "precio_unitario", e.target.value)
+                        }
                         required
-                        className="w-full"
                       />
                     </div>
                     {items.length > 1 && (
@@ -341,17 +383,18 @@ export default function EditarVentaPage() {
                   </div>
                 </div>
               ))}
-
               <Button type="button" variant="outline" onClick={agregarItem}>
                 + Agregar producto
               </Button>
             </div>
 
-            {/* Totales y vuelto */}
-            <div className="text-sm text-muted-foreground">
+            {/* Totales */}
+            <div className="text-sm text-muted-foreground pt-2">
               <p>Subtotal: C${total.toFixed(2)}</p>
               <p>Impuesto (18%): C${(total * 0.18).toFixed(2)}</p>
-              <p><strong>Total: C${totalConImpuesto.toFixed(2)}</strong></p>
+              <p className="font-semibold text-black dark:text-white">
+                Total: C${totalConImpuesto.toFixed(2)}
+              </p>
               {vuelto !== null && (
                 <p className={`font-semibold ${vuelto < 0 ? "text-red-600" : "text-green-600"}`}>
                   {vuelto < 0
@@ -361,10 +404,10 @@ export default function EditarVentaPage() {
               )}
             </div>
 
-            {/* Errores y botones */}
+            {/* Error y botones */}
             {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <div>
+            <div className="pt-4">
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Guardando..." : "Actualizar Venta"}
               </Button>

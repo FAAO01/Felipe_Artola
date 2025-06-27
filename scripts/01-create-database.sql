@@ -154,6 +154,8 @@ CREATE TABLE `ventas` (
   `usuario_modificacion` int(11) DEFAULT NULL,
   `fecha_modificacion` datetime DEFAULT NULL,
   `eliminado` tinyint(1) DEFAULT 0,
+  `abono` DECIMAL(10,2) DEFAULT 0 NOT NULL,
+  `saldo_pendiente` DECIMAL(10,2) DEFAULT 0 NOT NULL,
   PRIMARY KEY (`id_venta`),
   KEY `id_cliente` (`id_cliente`),
   KEY `id_usuario` (`id_usuario`),
