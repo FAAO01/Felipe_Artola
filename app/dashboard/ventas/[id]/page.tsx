@@ -45,7 +45,6 @@ export default function VerDetalleVentaPage() {
 
   if (!venta) return <p className="p-6 text-gray-500">Cargando venta...</p>
 
-  // Conversión segura de valores
   const subtotal = venta.productos.reduce(
     (acc, item) => acc + Number(item.subtotal || 0),
     0
@@ -77,6 +76,17 @@ export default function VerDetalleVentaPage() {
             <div>
               <Label className="text-muted-foreground">Fecha</Label>
               <p>{new Date(venta.fecha).toLocaleString("es-NI")}</p>
+            </div>
+            <div className="col-span-2">
+              <Label className="text-muted-foreground">Método de pago</Label>
+              <p className="capitalize">
+                {venta.metodo_pago === "efectivo" && "Efectivo"}
+                {venta.metodo_pago === "tarjeta" && "Tarjeta"}
+                {venta.metodo_pago === "transferencia" && "Transferencia bancaria"}
+                {venta.metodo_pago === "credito" && "Crédito"}
+                {!["efectivo", "tarjeta", "transferencia", "credito"].includes(venta.metodo_pago) &&
+                  venta.metodo_pago}
+              </p>
             </div>
           </section>
 
