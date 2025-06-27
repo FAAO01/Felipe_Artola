@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
+// GET /api/ventas/[id]
 export async function GET(
   _: NextRequest,
   { params }: { params: { id: string } }
@@ -54,6 +55,42 @@ export async function GET(
     console.error("Error obteniendo venta:", error)
     return NextResponse.json(
       { error: "Error interno del servidor" },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/ventas/[id]
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = params.id
+
+    const venta = await executeQuery(
+      `SELECT id_venta, eliminado FROM ventas WHERE id_venta = ?`,
+      [id]
+    ) as any[]
+
+    if (!venta.length) {
+      return NextResponse.json({ error: "Venta no encontrada." }, { status: 404 })
+    }
+
+    if (venta[0].eliminado === 1) {
+      return NextResponse.json({ error: "La venta ya fue eliminada." }, { status: 400 })
+    }
+
+    await executeQuery(
+      `UPDATE ventas SET eliminado = 1 WHERE id_venta = ?`,
+      [id]
+    )
+
+    return NextResponse.json({ message: "Venta eliminada correctamente." })
+  } catch (error) {
+    console.error("Error eliminando venta:", error)
+    return NextResponse.json(
+      { error: "Error al eliminar la venta" },
       { status: 500 }
     )
   }
