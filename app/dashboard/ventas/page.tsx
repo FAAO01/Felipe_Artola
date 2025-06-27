@@ -100,7 +100,7 @@ export default function VentasPage() {
 
   // Lógica para imprimir
   const handleImprimirVenta = (id: number) => {
-    window.open(`/dashboard/ventas/${id}/imprimir`, "_blank")
+    window.open(`/dashboard/ventas/${id}/imprimir`)
   }
 
   return (
