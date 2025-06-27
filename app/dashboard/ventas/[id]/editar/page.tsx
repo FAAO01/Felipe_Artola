@@ -29,7 +29,8 @@ interface ItemVenta {
 
 export default function EditarVentaPage() {
   const router = useRouter()
-  const { id } = useParams()
+  const params = useParams()
+  const id = Array.isArray(params?.id) ? params?.id[0] : params?.id
   const [productos, setProductos] = useState<Producto[]>([])
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [items, setItems] = useState<ItemVenta[]>([])

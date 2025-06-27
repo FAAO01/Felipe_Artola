@@ -1,64 +1,60 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
-// GET /api/ventas/[id]
-export async function GET(_: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const id = params.id
 
-    const query = `
-      SELECT v.*, p.nombre AS producto_nombre
-      FROM ventas v
-      LEFT JOIN productos p ON v.id_producto = p.id_producto
-      WHERE v.id_venta = ?
-    `
-    const resultado = await executeQuery(query, [id]) as any[]
+    const resultado = await executeQuery(
+      `
+        SELECT
+          v.id_venta,
+          v.id_cliente,
+          v.fecha_venta AS fecha_venta,
+          v.metodo_pago,
+          CONCAT(c.nombre, ' ', c.apellido) AS cliente,
+          p.id_producto,
+          p.nombre AS producto,
+          dv.cantidad,
+          dv.precio_unitario,
+          (dv.cantidad * dv.precio_unitario) AS subtotal
+        FROM ventas v
+        JOIN clientes c ON c.id_cliente = v.id_cliente
+        JOIN detalle_ventas dv ON dv.id_venta = v.id_venta
+        JOIN productos p ON p.id_producto = dv.id_producto
+        WHERE v.id_venta = ?
+      `,
+      [id]
+    ) as any[]
 
     if (!resultado || resultado.length === 0) {
       return NextResponse.json({ error: "Venta no encontrada" }, { status: 404 })
     }
 
-    return NextResponse.json({ venta: resultado[0] })
+    const venta = {
+      id_venta: resultado[0].id_venta,
+      id_cliente: resultado[0].id_cliente,
+      fecha: resultado[0].fecha_venta,
+      metodo_pago: resultado[0].metodo_pago,
+      cliente: resultado[0].cliente,
+      productos: resultado.map((r) => ({
+        id_producto: r.id_producto,
+        producto: r.producto,
+        cantidad: r.cantidad,
+        precio_unitario: r.precio_unitario,
+        subtotal: r.subtotal,
+      })),
+    }
+
+    return NextResponse.json({ venta })
   } catch (error) {
     console.error("Error obteniendo venta:", error)
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
-  }
-}
-
-// PUT /api/ventas/[id]
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-    const { id_producto, cantidad } = await request.json()
-
-    const query = `
-      UPDATE ventas
-      SET id_producto = ?, cantidad = ?
-      WHERE id_venta = ?
-    `
-
-    await executeQuery(query, [id_producto, cantidad, id])
-    return NextResponse.json({ message: "Venta actualizada correctamente" })
-  } catch (error) {
-    console.error("Error actualizando venta:", error)
-    return NextResponse.json({ error: "Error al actualizar venta" }, { status: 500 })
-  }
-}
-
-// DELETE /api/ventas/[id]
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    const id = params.id
-
-    const query = `
-      DELETE FROM ventas
-      WHERE id_venta = ?
-    `
-
-    await executeQuery(query, [id])
-    return NextResponse.json({ message: "Venta eliminada correctamente" })
-  } catch (error) {
-    console.error("Error eliminando venta:", error)
-    return NextResponse.json({ error: "Error al eliminar venta" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    )
   }
 }

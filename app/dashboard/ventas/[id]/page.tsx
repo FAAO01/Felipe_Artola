@@ -2,42 +2,32 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 
 interface ProductoVenta {
   id_producto: number
+  producto: string
   cantidad: number
   precio_unitario: number
+  subtotal: number
 }
 
 interface VentaDetalle {
   id_venta: number
   id_cliente: number
-  cliente_nombre: string
-  cliente_apellido: string
-  fecha_venta: string
+  cliente: string
+  fecha: string
   metodo_pago: string
-  id_transferencia?: string
-  ultimos4?: string
-  monto_recibido?: number
-  nota?: string
-  subtotal: number | string | null
-  impuesto: number | string | null
-  total: number | string | null
   productos: ProductoVenta[]
 }
 
 export default function VerDetalleVentaPage() {
-  const { id } = useParams()
+  const params = useParams()
   const router = useRouter()
   const [venta, setVenta] = useState<VentaDetalle | null>(null)
+  const id = params?.id?.toString() ?? ""
 
   useEffect(() => {
     const fetchVenta = async () => {
@@ -53,10 +43,21 @@ export default function VerDetalleVentaPage() {
     fetchVenta()
   }, [id])
 
-  const mostrarMonto = (valor: number | string | null | undefined) =>
-    Number(valor ?? 0).toFixed(2)
-
   if (!venta) return <p className="p-6 text-gray-500">Cargando venta...</p>
+
+  // Conversión segura de valores
+  const subtotal = venta.productos.reduce(
+    (acc, item) => acc + Number(item.subtotal || 0),
+    0
+  )
+  const impuesto = subtotal * 0.18
+  const total = subtotal + impuesto
+
+  const mostrar = (valor: number | string | null | undefined) =>
+    new Intl.NumberFormat("es-NI", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(valor ?? 0))
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-6">
@@ -71,44 +72,11 @@ export default function VerDetalleVentaPage() {
           <section className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <Label className="text-muted-foreground">Cliente</Label>
-              <p>{venta.cliente_nombre} {venta.cliente_apellido}</p>
+              <p>{venta.cliente}</p>
             </div>
             <div>
               <Label className="text-muted-foreground">Fecha</Label>
-              <p>{new Date(venta.fecha_venta).toLocaleString("es-NI")}</p>
-            </div>
-            <div className="col-span-2">
-              <Label className="text-muted-foreground">Método de pago</Label>
-              <p className="capitalize">{venta.metodo_pago}</p>
-
-              {venta.metodo_pago === "efectivo" && (
-                <p>
-                  <span className="font-semibold">Monto recibido:</span>{" "}
-                  {venta.monto_recibido != null
-                    ? `C$${mostrarMonto(venta.monto_recibido)}`
-                    : <em className="text-muted-foreground">No registrado</em>}
-                </p>
-              )}
-
-              {venta.metodo_pago === "transferencia" && (
-                <p>
-                  <span className="font-semibold">ID de Transferencia:</span>{" "}
-                  {venta.id_transferencia || <em className="text-muted-foreground">No disponible</em>}
-                </p>
-              )}
-
-              {venta.metodo_pago === "tarjeta" && (
-                <p>
-                  <span className="font-semibold">Últimos 4 dígitos:</span>{" "}
-                  {venta.ultimos4 || <em className="text-muted-foreground">No disponible</em>}
-                </p>
-              )}
-
-              {venta.metodo_pago === "credito" && venta.nota && (
-                <p>
-                  <span className="font-semibold">Nota:</span> {venta.nota}
-                </p>
-              )}
+              <p>{new Date(venta.fecha).toLocaleString("es-NI")}</p>
             </div>
           </section>
 
@@ -121,13 +89,13 @@ export default function VerDetalleVentaPage() {
                   className="flex justify-between items-center px-4 py-2 text-sm"
                 >
                   <div>
-                    <p className="font-medium">Producto #{prod.id_producto}</p>
+                    <p className="font-medium">{prod.producto}</p>
                     <p className="text-muted-foreground">
-                      {prod.cantidad} x C${mostrarMonto(prod.precio_unitario)}
+                      {prod.cantidad} x C${mostrar(prod.precio_unitario)}
                     </p>
                   </div>
                   <span className="font-semibold text-right">
-                    C${mostrarMonto(prod.precio_unitario * prod.cantidad)}
+                    C${mostrar(prod.subtotal)}
                   </span>
                 </div>
               ))}
@@ -135,10 +103,10 @@ export default function VerDetalleVentaPage() {
           </section>
 
           <section className="text-sm text-right text-muted-foreground space-y-1 border-t pt-4">
-            <p>Subtotal: C${mostrarMonto(venta.subtotal)}</p>
-            <p>Impuesto (18%): C${mostrarMonto(venta.impuesto)}</p>
+            <p>Subtotal: C${mostrar(subtotal)}</p>
+            <p>Impuesto (18%): C${mostrar(impuesto)}</p>
             <p className="text-lg text-black dark:text-white font-bold">
-              Total: C${mostrarMonto(venta.total)}
+              Total: C${mostrar(total)}
             </p>
           </section>
 
