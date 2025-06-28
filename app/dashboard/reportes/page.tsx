@@ -85,7 +85,8 @@ export default function ReportesPage() {
       console.error("Error cargando reportes:", error)
     }
   }
-    const exportarCard = (title: string, valor: string | number) => {
+
+  const exportarCard = (title: string, valor: string | number) => {
     let data: any[] = []
 
     if (title === "Proveedores") {
@@ -135,13 +136,14 @@ export default function ReportesPage() {
         Estado: venta.estado ?? "confirmada"
       }))
     } else if (title === "Ventas Pendientes") {
+      // Mostrar todas las ventas pendientes con los campos relevantes
       data = ventasPendientes.map((venta: any) => ({
         ID: venta.id_venta,
-        Cliente: venta.cliente,
-        Saldo_Pendiente: `C$${venta.saldo_pendiente}`,
-        Total: `C$${venta.total}`,
+        Nombre: venta.cliente_nombre || venta.cliente || "Sin nombre",
+        Apellido: venta.cliente_apellido || "",
+        Total: `C$${Number(venta.total || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
         Fecha: formatearFecha(venta.fecha_venta),
-        Estado: "pendiente"
+        Estado: "Pendiente"
       }))
     } else {
       data = [{ Reporte: title, Valor: valor }]
@@ -152,7 +154,8 @@ export default function ReportesPage() {
     XLSX.utils.book_append_sheet(workbook, worksheet, title.replaceAll(" ", "_"))
     XLSX.writeFile(workbook, `${title.replaceAll(" ", "_")}.xlsx`)
   }
-    const cards = resumen
+
+  const cards = resumen
     ? [
         {
           title: "Total ventas",
@@ -200,7 +203,7 @@ export default function ReportesPage() {
           title: "Ventas Pendientes",
           icon: BarChart3,
           color: "text-red-500",
-          value: resumen.ventas_pendientes ?? 0
+          value: ventasPendientes.length
         }
       ]
     : []
