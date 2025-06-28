@@ -48,16 +48,14 @@ export default function ReportesPage() {
         resProveedores,
         resClientes,
         resProductos,
-        resVentasTotales,
-        resVentasPendientes
+        resVentasTotales
       ] = await Promise.all([
         fetch("/api/reportes"),
         fetch("/api/categorias"),
         fetch("/api/proveedores"),
         fetch("/api/clientes"),
         fetch("/api/productos"),
-        fetch("/api/ventas"),
-        fetch("/api/ventas/pendientes")
+        fetch("/api/ventas")
       ])
 
       const resumenGeneral = await resReportes.json()
@@ -66,10 +64,13 @@ export default function ReportesPage() {
       const dataClientes = await resClientes.json()
       const dataProductos = await resProductos.json()
       const dataVentasTotales = await resVentasTotales.json()
-      const dataVentasPendientes = await resVentasPendientes.json()
 
       const productosFiltrados =
         dataProductos?.productos?.filter((p: any) => p.stock <= 5 && p.eliminado === 0) || []
+
+      const ventasPendientesFiltradas = (dataVentasTotales?.ventas ?? []).filter(
+        (venta: any) => venta.metodo_pago === "credito"
+      )
 
       setResumen(resumenGeneral)
       setCategorias(dataCategorias?.categorias?.length ?? 0)
@@ -77,7 +78,7 @@ export default function ReportesPage() {
       setClientes(dataClientes?.clientes?.length ?? 0)
       setProductosBajos(productosFiltrados)
       setVentasTotales(dataVentasTotales?.ventas ?? [])
-      setVentasPendientes(dataVentasPendientes?.ventas ?? [])
+      setVentasPendientes(ventasPendientesFiltradas)
       setDataCompletaCategorias(dataCategorias?.categorias ?? [])
       setDataCompletaProveedores(dataProveedores?.proveedores ?? [])
       setDataCompletaClientes(dataClientes?.clientes ?? [])
@@ -130,13 +131,13 @@ export default function ReportesPage() {
     } else if (title === "Total ventas") {
       data = ventasTotales.map((venta: any) => ({
         ID: venta.id_venta,
-        Cliente: venta.cliente,
-        Total: `C$${venta.total}`,
+        Cliente: venta.cliente_nombre || venta.cliente || "Sin nombre",
+        Total: `C$${Number(venta.total || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
         Fecha: formatearFecha(venta.fecha_venta),
-        Estado: venta.estado ?? "confirmada"
+        Estado: venta.metodo_pago === "credito" ? "Pendiente" : "Pagada"
       }))
     } else if (title === "Ventas Pendientes") {
-      // Mostrar todas las ventas pendientes con los campos relevantes
+      // Solo ventas con método de pago "credito"
       data = ventasPendientes.map((venta: any) => ({
         ID: venta.id_venta,
         Nombre: venta.cliente_nombre || venta.cliente || "Sin nombre",
