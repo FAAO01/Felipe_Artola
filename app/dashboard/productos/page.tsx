@@ -150,7 +150,7 @@ export default function ProductosPage() {
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">S/ {producto.precio_venta.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-900">C$ {producto.precio_venta.toFixed(2)}</p>
                     <p className={`text-sm ${producto.stock <= producto.stock_minimo ? "text-red-600" : "text-gray-500"}`}>
                       Stock: {producto.stock}
                     </p>

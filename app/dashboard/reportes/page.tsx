@@ -22,7 +22,7 @@ export default function ReportesPage() {
   const [clientes, setClientes] = useState<number>(0)
   const [productosBajos, setProductosBajos] = useState<any[]>([])
   const [ventasTotales, setVentasTotales] = useState<any[]>([])
-  const [ventasPendientes, setVentasPendientes] = useState<any[]>([])
+  const [ventasCredito, setVentasCredito] = useState<any[]>([])
   const [dataCompletaCategorias, setDataCompletaCategorias] = useState<any[]>([])
   const [dataCompletaProveedores, setDataCompletaProveedores] = useState<any[]>([])
   const [dataCompletaClientes, setDataCompletaClientes] = useState<any[]>([])
@@ -68,7 +68,8 @@ export default function ReportesPage() {
       const productosFiltrados =
         dataProductos?.productos?.filter((p: any) => p.stock <= 5 && p.eliminado === 0) || []
 
-      const ventasPendientesFiltradas = (dataVentasTotales?.ventas ?? []).filter(
+      // Ventas a crédito (metodo_pago === "credito")
+      const ventasCreditoFiltradas = (dataVentasTotales?.ventas ?? []).filter(
         (venta: any) => venta.metodo_pago === "credito"
       )
 
@@ -78,7 +79,7 @@ export default function ReportesPage() {
       setClientes(dataClientes?.clientes?.length ?? 0)
       setProductosBajos(productosFiltrados)
       setVentasTotales(dataVentasTotales?.ventas ?? [])
-      setVentasPendientes(ventasPendientesFiltradas)
+      setVentasCredito(ventasCreditoFiltradas)
       setDataCompletaCategorias(dataCategorias?.categorias ?? [])
       setDataCompletaProveedores(dataProveedores?.proveedores ?? [])
       setDataCompletaClientes(dataClientes?.clientes ?? [])
@@ -134,18 +135,29 @@ export default function ReportesPage() {
         Cliente: venta.cliente_nombre || venta.cliente || "Sin nombre",
         Total: `C$${Number(venta.total || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
         Fecha: formatearFecha(venta.fecha_venta),
-        Estado: venta.metodo_pago === "credito" ? "Pendiente" : "Pagada"
+        Estado: venta.metodo_pago === "credito"
+          ? (Number((venta.saldo_pendiente ?? (venta.total - (venta.abono ?? 0)))) <= 0 ? "Pagado" : "Pendiente")
+          : "Pagada"
       }))
     } else if (title === "Ventas Pendientes") {
-      // Solo ventas con método de pago "credito"
-      data = ventasPendientes.map((venta: any) => ({
-        ID: venta.id_venta,
-        Nombre: venta.cliente_nombre || venta.cliente || "Sin nombre",
-        Apellido: venta.cliente_apellido || "",
-        Total: `C$${Number(venta.total || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
-        Fecha: formatearFecha(venta.fecha_venta),
-        Estado: "Pendiente"
-      }))
+      // Solo ventas a crédito, y mostrar estado según saldo pendiente
+      data = ventasCredito.map((venta: any) => {
+        const saldoPendiente = Number(
+          venta.saldo_pendiente !== undefined
+            ? venta.saldo_pendiente
+            : (venta.total - (venta.abono ?? 0))
+        )
+        return {
+          ID: venta.id_venta,
+          Nombre: venta.cliente_nombre || venta.cliente || "Sin nombre",
+          Apellido: venta.cliente_apellido || "",
+          Total: `C$${Number(venta.total || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
+          Abono: `C$${Number(venta.abono || 0).toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
+          "Saldo pendiente": `C$${saldoPendiente.toLocaleString("es-NI", { minimumFractionDigits: 2 })}`,
+          Fecha: formatearFecha(venta.fecha_venta),
+          Estado: saldoPendiente <= 0 ? "Pagado" : "Pendiente"
+        }
+      })
     } else {
       data = [{ Reporte: title, Valor: valor }]
     }
@@ -204,7 +216,14 @@ export default function ReportesPage() {
           title: "Ventas Pendientes",
           icon: BarChart3,
           color: "text-red-500",
-          value: ventasPendientes.length
+          value: ventasCredito.filter((venta: any) => {
+            const saldoPendiente = Number(
+              venta.saldo_pendiente !== undefined
+                ? venta.saldo_pendiente
+                : (venta.total - (venta.abono ?? 0))
+            )
+            return saldoPendiente > 0
+          }).length
         }
       ]
     : []
@@ -259,5 +278,3 @@ export default function ReportesPage() {
     </div>
   )
 }
-
-
