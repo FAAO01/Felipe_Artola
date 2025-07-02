@@ -8,11 +8,20 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
+interface Rol {
+  id_rol: number
+  nombre_rol: string
+}
+
 export default function EditarUsuarioPage() {
-  const { id } = useParams()
+  const params = useParams() as Record<string, string | string[]>
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [cargando, setCargando] = useState(true)
+  const [roles, setRoles] = useState<Rol[]>([])
+  const [rolesError, setRolesError] = useState("")
+  const [rolesLoading, setRolesLoading] = useState(true)
 
   const [form, setForm] = useState({
     nombre: "",
@@ -22,6 +31,7 @@ export default function EditarUsuarioPage() {
     telefono: "",
     direccion: "",
     estado: "activo",
+    id_rol: 1, 
   })
 
   const [formInicial, setFormInicial] = useState(form)
@@ -41,6 +51,7 @@ export default function EditarUsuarioPage() {
             telefono: data.telefono || "",
             direccion: data.direccion || "",
             estado: data.estado || "activo",
+            id_rol: data.id_rol || 1,
           }
           setForm(usuarioCargado)
           setFormInicial(usuarioCargado)
@@ -55,11 +66,31 @@ export default function EditarUsuarioPage() {
       }
     }
 
-    if (id) cargarUsuario()
+    const cargarRoles = async () => {
+      try {
+        const res = await fetch("/api/roles")
+        const data = await res.json()
+        if (data.success && Array.isArray(data.roles)) {
+          setRoles(data.roles)
+        } else {
+          setRolesError("No se pudieron cargar los roles.")
+        }
+      } catch {
+        setRolesError("Error al cargar los roles.")
+      } finally {
+        setRolesLoading(false)
+      }
+    }
+
+    if (id) {
+      cargarUsuario()
+      cargarRoles()
+    }
   }, [id])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setForm({ ...form, [name]: name === "id_rol" ? Number(value) : value })
   }
 
   const guardarCambios = async () => {
@@ -135,6 +166,27 @@ export default function EditarUsuarioPage() {
                   <option value="inactivo">Inactivo</option>
                   <option value="bloqueado">Bloqueado</option>
                 </select>
+              </div>
+              <div className="md:col-span-2">
+                <Label>Rol</Label>
+                {rolesLoading ? (
+                  <p className="text-sm text-muted-foreground">Cargando roles...</p>
+                ) : rolesError ? (
+                  <p className="text-sm text-red-500">{rolesError}</p>
+                ) : (
+                  <select
+                    name="id_rol"
+                    value={form.id_rol}
+                    onChange={handleChange}
+                    className="w-full border rounded px-3 py-2 mt-1"
+                  >
+                    {roles.map((rol) => (
+                      <option key={rol.id_rol} value={rol.id_rol}>
+                        {rol.nombre_rol}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <Button className="md:col-span-2 mt-4" onClick={guardarCambios} disabled={loading}>

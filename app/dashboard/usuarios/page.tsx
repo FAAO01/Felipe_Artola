@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Search, MoreVertical } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import {
   Card,
   CardHeader,
@@ -10,21 +10,7 @@ import {
   CardContent
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody
-} from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from "@/components/ui/dropdown-menu"
 
 interface Usuario {
   id_usuario: number
@@ -65,10 +51,12 @@ export default function UsuariosPage() {
 
   return (
     <div className="space-y-6 py-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
-          <p className="text-muted-foreground">Gestión de usuarios registrados en el sistema</p>
+          <p className="text-muted-foreground">
+            Gestión de usuarios registrados en el sistema
+          </p>
         </div>
         <Button
           className="bg-orange-500 hover:bg-orange-600"
@@ -82,7 +70,7 @@ export default function UsuariosPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Usuarios</CardTitle>
-          <div className="flex items-center space-x-2 mt-4">
+          <div className="flex items-center gap-2 mt-4">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por nombre, usuario o email..."
@@ -92,69 +80,61 @@ export default function UsuariosPage() {
             />
           </div>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Correo</TableHead>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+
+        <CardContent>
+          {usuariosFiltrados.length === 0 ? (
+            <p className="text-center text-muted-foreground py-6">
+              No se encontraron usuarios.
+            </p>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {usuariosFiltrados.map((u) => (
-                <TableRow key={u.id_usuario}>
-                  <TableCell>{u.nombre} {u.apellido}</TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>{u.usuario}</TableCell>
-                  <TableCell>{u.rol}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/dashboard/usuarios/${u.id_usuario}/editar`)}>
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            const confirmado = confirm(`¿Eliminar a ${u.nombre} ${u.apellido}?`)
-                            if (!confirmado) return
-                            try {
-                              const res = await fetch(`/api/usuarios/${u.id_usuario}`, {
-                                method: "DELETE"
-                              })
-                              if (!res.ok) throw new Error()
-                              setUsuarios((prev) =>
-                                prev.filter((user) => user.id_usuario !== u.id_usuario)
-                              )
-                            } catch (error) {
-                              console.error("Error al eliminar usuario:", error)
-                              alert("No se pudo eliminar el usuario.")
-                            }
-                          }}
-                        >
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
+                <Card key={u.id_usuario} className="p-4">
+                  <CardHeader className="p-0 pb-2">
+                    <CardTitle className="text-lg">
+                      {u.nombre} {u.apellido}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1 text-sm text-muted-foreground p-0">
+                    <p><strong>Correo:</strong> {u.email}</p>
+                    <p><strong>Usuario:</strong> {u.usuario}</p>
+                    <p><strong>Rol:</strong> {u.rol}</p>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/dashboard/usuarios/${u.id_usuario}/editar`)}
+                      >
+                        Editar
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={async () => {
+                          const confirmado = confirm(`¿Eliminar a ${u.nombre} ${u.apellido}?`)
+                          if (!confirmado) return
+                          try {
+                            const res = await fetch(`/api/usuarios/${u.id_usuario}`, {
+                              method: "DELETE"
+                            })
+                            if (!res.ok) throw new Error()
+                            setUsuarios((prev) =>
+                              prev.filter((user) => user.id_usuario !== u.id_usuario)
+                            )
+                          } catch (error) {
+                            console.error("Error al eliminar usuario:", error)
+                            alert("No se pudo eliminar el usuario.")
+                          }
+                        }}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
-              {usuariosFiltrados.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                    No se encontraron usuarios.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
