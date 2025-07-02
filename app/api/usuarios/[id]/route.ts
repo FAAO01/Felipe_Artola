@@ -5,7 +5,7 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
   try {
     const id = parseInt(params.id)
     const query = `
-      SELECT id_usuario, nombre, apellido, email, usuario, telefono, direccion, estado
+      SELECT id_usuario, nombre, apellido, email, usuario, telefono, direccion, estado, id_rol
       FROM usuarios
       WHERE id_usuario = ? AND eliminado = 0
       LIMIT 1
@@ -24,20 +24,23 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = parseInt(params.id)
-    const { nombre, apellido, email, usuario, telefono, direccion, estado } = await req.json()
+    const { nombre, apellido, email, usuario, telefono, direccion, estado, id_rol } = await req.json()
 
     const query = `
       UPDATE usuarios
-      SET nombre = ?, apellido = ?, email = ?, usuario = ?, telefono = ?, direccion = ?, estado = ?, fecha_modificacion = NOW()
+      SET nombre = ?, apellido = ?, email = ?, usuario = ?, telefono = ?, direccion = ?, estado = ?, id_rol = ?, fecha_modificacion = NOW()
       WHERE id_usuario = ?
     `
-    const values = [nombre, apellido, email, usuario, telefono, direccion, estado, id]
+    const values = [nombre, apellido, email, usuario, telefono, direccion, estado, id_rol, id]
     await executeQuery(query, values)
 
     return NextResponse.json({ mensaje: "Usuario actualizado correctamente." })
   } catch (error) {
     console.error("Error al actualizar usuario:", error)
-    return NextResponse.json({ error: "No se pudo actualizar el usuario." }, { status: 500 })
+    return NextResponse.json({ 
+      error: "No se pudo actualizar el usuario.",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 

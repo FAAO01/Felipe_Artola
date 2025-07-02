@@ -31,7 +31,7 @@ export default function EditarUsuarioPage() {
     telefono: "",
     direccion: "",
     estado: "activo",
-    id_rol: 1, 
+    id_rol: 1,
   })
 
   const [formInicial, setFormInicial] = useState(form)
@@ -90,7 +90,10 @@ export default function EditarUsuarioPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setForm({ ...form, [name]: name === "id_rol" ? Number(value) : value })
+    setForm(prev => ({
+      ...prev,
+      [name]: name === "id_rol" ? Number(value) : value
+    }))
   }
 
   const guardarCambios = async () => {
@@ -101,11 +104,16 @@ export default function EditarUsuarioPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       })
-      if (!res.ok) throw new Error()
-      toast.success("Usuario actualizado")
+      
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || "Error al actualizar")
+      }
+      
+      toast.success("Usuario actualizado correctamente")
       router.push("/dashboard/usuarios")
     } catch (err) {
-      toast.error("Error al actualizar")
+      toast.error("Error al actualizar el usuario")
       console.error(err)
     } finally {
       setLoading(false)
