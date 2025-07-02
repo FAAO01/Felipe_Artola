@@ -89,7 +89,7 @@ export default function TopCategoryChart() {
 
   if (loading) return <div>Cargando...</div>
   if (error) return <div>Error: {error}</div>
-  if (dataPoints.length === 0) return <div>No hay datos de stock por categoría.</div>
+  if (dataPoints.length === 0) return <center><div>No hay categorias registradas.</div></center>
 
   return <Bar data={data} options={options} />
 }

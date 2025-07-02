@@ -87,7 +87,7 @@ export default function MostSoldProductsChart() {
 
   if (loading) return <div style={{ textAlign: "center" }}>Cargando...</div>
   if (error) return <div style={{ textAlign: "center" }}>Error: {error}</div>
-  if (dataPoints.length === 0) return <div style={{ textAlign: "center" }}>No hay productos vendidos aún.</div>
+  if (dataPoints.length === 0) return <div style={{ textAlign: "center" }}>No hay ventas realizadas aun.</div>
 
   return <Bar data={data} options={options} />
 }
