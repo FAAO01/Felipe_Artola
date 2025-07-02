@@ -21,6 +21,7 @@ interface Venta {
   total: number
   fecha_venta: string
   metodo_pago?: string
+  saldo_pendiente?: number // <-- Asegúrate de que tu API devuelva este campo
 }
 
 interface Pagination {
@@ -79,16 +80,26 @@ export default function VentasPage() {
   }
 
   // Helper para mostrar el estado de pago
-  const renderEstadoPago = (metodo_pago?: string) => {
-    if (!metodo_pago) return null
-    if (["efectivo", "tarjeta", "transferencia"].includes(metodo_pago)) {
+  const renderEstadoPago = (venta: Venta) => {
+    // Si el método de pago es crédito y el saldo pendiente es 0, mostrar como pagado
+    if (
+      venta.metodo_pago === "credito" &&
+      (venta.saldo_pendiente !== undefined && Number(venta.saldo_pendiente) <= 0)
+    ) {
       return (
         <span className="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold ml-2">
           Pagado
         </span>
       )
     }
-    if (metodo_pago === "credito") {
+    if (["efectivo", "tarjeta", "transferencia"].includes(venta.metodo_pago || "")) {
+      return (
+        <span className="inline-block px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-semibold ml-2">
+          Pagado
+        </span>
+      )
+    }
+    if (venta.metodo_pago === "credito") {
       return (
         <span className="inline-block px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-semibold ml-2">
           Pendiente
@@ -175,7 +186,7 @@ export default function VentasPage() {
                           <h3 className="text-sm font-medium text-gray-900 truncate">
                             {venta.cliente_nombre || "Sin nombre"} {venta.cliente_apellido || ""}
                           </h3>
-                          {renderEstadoPago(venta.metodo_pago)}
+                          {renderEstadoPago(venta)}
                         </div>
                         <div className="mt-1 text-sm text-gray-500 flex flex-col gap-1">
                           <span>

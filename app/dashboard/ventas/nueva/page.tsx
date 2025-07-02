@@ -138,12 +138,17 @@ export default function NuevaVentaPage() {
         })),
       }
 
-      if (metodo_pago === "transferencia") {
-        payload.id_transferencia = montoRecibido
-      } else if (metodo_pago === "tarjeta") {
-        payload.ultimos4 = montoRecibido
+      // Determinar el estado de la venta según el método de pago
+      if (metodo_pago === "transferencia" || metodo_pago === "tarjeta" || metodo_pago === "efectivo") {
+        payload.estado = "pagado"
+        if (metodo_pago === "transferencia") {
+          payload.id_transferencia = montoRecibido
+        } else if (metodo_pago === "tarjeta") {
+          payload.ultimos4 = montoRecibido
+        }
       } else if (metodo_pago === "credito") {
         payload.nota = nota
+        payload.estado = "pendiente" // Marcar como pendiente
       }
 
       const res = await fetch("/api/ventas", {
@@ -218,7 +223,7 @@ export default function NuevaVentaPage() {
                     type="text"
                     value={nota}
                     onChange={(e) => setNota(e.target.value)}
-                    required={metodo_pago === "credito"}
+                    required
                     placeholder="Ingrese una observación o nota"
                   />
                 ) : (
@@ -280,7 +285,9 @@ export default function NuevaVentaPage() {
                         min="0"
                         step="0.01"
                         value={item.precio_unitario}
-                        onChange={(e) => handleItemChange(index, "precio_unitario", e.target.value)}
+                        onChange={(e) =>
+                          handleItemChange(index, "precio_unitario", e.target.value)
+                        }
                         required
                       />
                     </div>
