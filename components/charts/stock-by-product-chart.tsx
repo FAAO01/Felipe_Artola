@@ -81,7 +81,7 @@ export default function StockByProductChart() {
     },
   }
 
-  if (loading) return <div>Cargando...</div>
+  if (loading) return <div><center>Cargando...</center></div>
   if (error) return <div>Error: {error}</div>
   if (dataPoints.length === 0) return <center><div>No hay productos con stock registrado.</div></center>
 

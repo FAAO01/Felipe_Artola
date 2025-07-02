@@ -87,7 +87,7 @@ export default function TopCategoryChart() {
     },
   }
 
-  if (loading) return <div>Cargando...</div>
+  if (loading) return <div><center>Cargando...</center></div>
   if (error) return <div>Error: {error}</div>
   if (dataPoints.length === 0) return <center><div>No hay categorias registradas.</div></center>
 

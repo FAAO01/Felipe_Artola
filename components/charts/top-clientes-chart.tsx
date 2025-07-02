@@ -86,7 +86,7 @@ export default function TopClientesChart() {
     },
   }
 
-  if (loading) return <div style={{ textAlign: "center" }}>Cargando...</div>
+  if (loading) return <div style={{ textAlign: "center" }}><center>Cargando...</center></div>
   if (error) return <div style={{ textAlign: "center" }}>Error: {error}</div>
   if (dataPoints.length === 0) return <div style={{ textAlign: "center" }}>No hay clientes con compras registradas.</div>
 
