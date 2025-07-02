@@ -41,3 +41,6 @@ INSERT INTO `clientes` (`nombre`, `apellido`, `tipo_documento`, `numero_document
 ('Juan', 'Pérez', 'DNI', '12345678', 'juan.perez@email.com', '987654321', 'Av. Los Olivos 123', 1),
 ('María', 'García', 'DNI', '87654321', 'maria.garcia@email.com', '987654322', 'Jr. Las Flores 456', 1),
 ('Carlos', 'López', 'RUC', '20123456789', 'carlos.lopez@empresa.com', '987654323', 'Av. Industrial 789', 1);
+
+INSERT INTO `configuracion` (`nombre_negocio`, `moneda, impuesto`)VALUES 
+('Mi Ferretería', 'C$', 15.00);c

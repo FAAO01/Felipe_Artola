@@ -189,3 +189,13 @@ CREATE TABLE `detalle_ventas` (
   CONSTRAINT `detalle_ventas_ibfk_3` FOREIGN KEY (`usuario_creacion`) REFERENCES `usuarios` (`id_usuario`),
   CONSTRAINT `detalle_ventas_ibfk_4` FOREIGN KEY (`usuario_modificacion`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `configuracion` (
+  `id_configuracion` INT NOT NULL AUTO_INCREMENT,
+  `nombre_negocio` VARCHAR(100) NOT NULL,
+  `moneda` VARCHAR(10) NOT NULL,
+  `impuesto` DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id_configuracion`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
