@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
+import bcrypt from "bcryptjs"
 
-export async function GET(req: NextRequest) {
+export async function GET(_: NextRequest) {
   try {
     const usuarios = await executeQuery(`
       SELECT 
@@ -33,26 +34,48 @@ export async function POST(req: NextRequest) {
       usuario_creacion = 1
     } = await req.json()
 
-    const query = `
+    // Validación básica
+    if (!id_rol || !nombre || !apellido || !email || !usuario || !contrasena) {
+      return NextResponse.json(
+        { error: "Faltan campos obligatorios." },
+        { status: 400 }
+      )
+    }
+
+    const existentes = await executeQuery(
+      `SELECT id_usuario FROM usuarios WHERE usuario = ? OR email = ?`,
+      [usuario, email]
+    )
+
+    if (Array.isArray(existentes) && existentes.length > 0) {
+      return NextResponse.json(
+        { error: "El usuario o correo ya están registrados." },
+        { status: 409 }
+      )
+    }
+
+    const hash = await bcrypt.hash(contrasena, 10)
+
+    await executeQuery(
+      `
       INSERT INTO usuarios (
         id_rol, nombre, apellido, email, usuario, contrasena,
         telefono, direccion, estado, usuario_creacion
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `
-    const valores = [
-      id_rol,
-      nombre,
-      apellido,
-      email,
-      usuario,
-      contrasena,
-      telefono,
-      direccion,
-      estado,
-      usuario_creacion
-    ]
-
-    await executeQuery(query, valores)
+      `,
+      [
+        id_rol,
+        nombre.trim(),
+        apellido.trim(),
+        email.trim(),
+        usuario.trim(),
+        hash, 
+        telefono.trim(),
+        direccion.trim(),
+        estado,
+        usuario_creacion
+      ]
+    )
 
     return NextResponse.json({ mensaje: "Usuario creado con éxito." })
   } catch (error) {
