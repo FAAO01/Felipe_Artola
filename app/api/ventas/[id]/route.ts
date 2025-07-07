@@ -64,7 +64,7 @@ export async function GET(
   }
 }
 
-// PUT /api/ventas/[id]
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -113,7 +113,7 @@ export async function PUT(
   }
 }
 
-// DELETE /api/ventas/[id]
+
 export async function DELETE(
   _: NextRequest,
   { params }: { params: { id: string } }

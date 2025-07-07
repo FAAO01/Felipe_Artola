@@ -137,8 +137,7 @@ export default function NuevaVentaPage() {
           precio_unitario: parseFloat(item.precio_unitario),
         })),
       }
-
-      // Determinar el estado de la venta según el método de pago
+      
       if (metodo_pago === "transferencia" || metodo_pago === "tarjeta" || metodo_pago === "efectivo") {
         payload.estado = "pagado"
         if (metodo_pago === "transferencia") {
@@ -148,7 +147,7 @@ export default function NuevaVentaPage() {
         }
       } else if (metodo_pago === "credito") {
         payload.nota = nota
-        payload.estado = "pendiente" // Marcar como pendiente
+        payload.estado = "pendiente" 
       }
 
       const res = await fetch("/api/ventas", {

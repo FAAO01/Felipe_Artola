@@ -20,7 +20,7 @@ export async function GET(_: NextRequest) {
       ORDER BY v.fecha_venta DESC
     `)
 
-    console.log("Ventas pendientes encontradas:", ventas) // útil para depurar
+    console.log("Ventas pendientes encontradas:", ventas)
 
     return NextResponse.json({
       success: true,
