@@ -1,9 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
-export async function GET() {
+// GET: Lista productos, permite búsqueda por nombre, código de barras o descripción
+export async function GET(request: NextRequest) {
   try {
-    const query = `
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get("search")?.trim() || ""
+
+    let query = `
       SELECT 
         p.*,
         c.nombre AS categoria_nombre,
@@ -12,11 +16,24 @@ export async function GET() {
       LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
       LEFT JOIN proveedores pr ON p.id_proveedor = pr.id_proveedor
       WHERE p.eliminado = 0
-      ORDER BY p.nombre
     `
+    const params: any[] = []
 
-    const productos = await executeQuery(query)
-    return NextResponse.json({ productos })
+    if (search) {
+      query += `
+        AND (
+          p.nombre LIKE ? OR
+          p.codigo_barras LIKE ? OR
+          p.descripcion LIKE ?
+        )
+      `
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`)
+    }
+
+    query += ` ORDER BY p.nombre`
+
+    const productos = await executeQuery(query, params)
+    return NextResponse.json({ productos: Array.isArray(productos) ? productos : [] })
   } catch (error) {
     console.error("Error obteniendo productos:", error)
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
