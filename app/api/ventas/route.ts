@@ -1,3 +1,4 @@
+// route.ts (API logic)
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
@@ -7,9 +8,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = Number(searchParams.get("page") || "1")
     const limit = Number(searchParams.get("limit") || "10")
+    const search = searchParams.get("search") || ""
     const offset = (page - 1) * limit
 
-    const query = `
+    const baseQuery = `
       SELECT 
         v.*, 
         c.nombre AS cliente_nombre, 
@@ -19,14 +21,33 @@ export async function GET(request: NextRequest) {
       LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
       LEFT JOIN usuarios u ON v.id_usuario = u.id_usuario
       WHERE v.eliminado = 0
+    `
+
+    const searchConditions = search 
+      ? `AND (c.nombre LIKE ? OR c.apellido LIKE ? OR v.numero_factura LIKE ?)` 
+      : ""
+
+    const query = `
+      ${baseQuery}
+      ${searchConditions}
       ORDER BY v.fecha_venta DESC
       LIMIT ${limit} OFFSET ${offset}
     `
 
-    const countQuery = `SELECT COUNT(*) AS total FROM ventas WHERE eliminado = 0`
+    const countQuery = `
+      SELECT COUNT(*) AS total 
+      FROM ventas v
+      LEFT JOIN clientes c ON v.id_cliente = c.id_cliente
+      WHERE v.eliminado = 0
+      ${searchConditions}
+    `
 
-    const ventas = await executeQuery(query)
-    const countResult = await executeQuery(countQuery) as any[]
+    const searchParamsArray = search 
+      ? [`%${search}%`, `%${search}%`, `%${search}%`] 
+      : []
+
+    const ventas = await executeQuery(query, searchParamsArray)
+    const countResult = await executeQuery(countQuery, searchParamsArray) as any[]
     const total = countResult[0]?.total || 0
 
     return NextResponse.json({
