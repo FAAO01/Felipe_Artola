@@ -71,7 +71,7 @@ export default function BackupPage() {
 
   return (
     <div className="max-w-xl mx-auto mt-10 space-y-8">
-      {/* Card para Descargar Backup */}
+
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold flex gap-2 items-center">
@@ -91,7 +91,6 @@ export default function BackupPage() {
         </CardContent>
       </Card>
 
-      {/* Card para Restaurar Backup */}
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold flex gap-2 items-center">
