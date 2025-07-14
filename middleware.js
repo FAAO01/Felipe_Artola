@@ -27,12 +27,10 @@ export function middleware(request) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
-  // Si es una ruta pública, permitir acceso
   if (isPublicRoute) {
     return NextResponse.next()
   }
 
-  // Si no hay token, redirigir al login
   if (!token) {
     if (pathname.startsWith("/api/")) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
@@ -43,7 +41,6 @@ export function middleware(request) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Verificar token
   const decoded = verifyToken(token)
 
   if (!decoded) {
@@ -62,8 +59,8 @@ export function middleware(request) {
     return response
   }
 
-  // 🔐 Verificar permisos por sección
-  const seccion = pathname.split("/")[1] // ej: "/ventas" → "ventas"
+
+  const seccion = pathname.split("/dashboard")[1] 
   const tienePermiso = decoded.permisos?.includes(seccion)
 
   if (!tienePermiso && !pathname.startsWith("/api/auth")) {
