@@ -1,53 +1,54 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Pencil, Plus } from "lucide-react"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Pencil, Plus } from "lucide-react";
 
 interface Rol {
-  id_rol: number
-  nombre_rol: string
-  descripcion: string
-  funciones: string // CSV → ej. "dashboard,ventas,configuracion"
-  fecha_creacion: string
+  id_rol: number;
+  nombre_rol: string;
+  descripcion: string;
+  funciones: string; 
+  fecha_creacion: string;
+  nivel_acceso: string | number; 
 }
 
 export default function RolesPage() {
-  const [roles, setRoles] = useState<Rol[]>([])
-  const [error, setError] = useState("")
-  const router = useRouter()
+  const [roles, setRoles] = useState<Rol[]>([]);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const res = await fetch("/api/roles")
-        const data = await res.json()
-        console.log("Respuesta de /api/roles:", data)
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        console.log("Respuesta de /api/roles:", data);
 
         if (data.success && Array.isArray(data.roles)) {
-          setRoles(data.roles)
+          setRoles(data.roles);
         } else {
-          setError("No se pudieron cargar los roles correctamente.")
+          setError("No se pudieron cargar los roles correctamente.");
         }
       } catch (err) {
-        console.error("Error cargando roles:", err)
-        setError("Ocurrió un error al conectar con el servidor.")
+        console.error("Error cargando roles:", err);
+        setError("Ocurrió un error al conectar con el servidor.");
       }
-    }
+    };
 
-    fetchRoles()
-  }, [])
+    fetchRoles();
+  }, []);
 
   const handleEditar = (id: number) => {
-    router.push(`/dashboard/configuracion/roles/${id}/editar`)
-  }
+    router.push(`/dashboard/configuracion/roles/${id}/editar`);
+  };
 
   const handleNuevoRol = () => {
-    router.push("/dashboard/configuracion/nuevo")
-  }
+    router.push("/dashboard/configuracion/nuevo");
+  };
 
   return (
     <Card>
@@ -84,16 +85,32 @@ export default function RolesPage() {
                   <p className="text-sm text-muted-foreground mb-1">
                     {rol.descripcion || "Sin descripción"}
                   </p>
-                  <div className="flex flex-wrap gap-1 mt-1">
+
+                  {/* Nivel de acceso */}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nivel de acceso:{" "}
+                    <Badge variant="secondary" className="ml-1 text-[11px]">
+                      {String(rol.nivel_acceso).toUpperCase()}
+                    </Badge>
+                  </p>
+
+                  {/* Funciones */}
+                  <div className="flex flex-wrap gap-1 mt-2">
                     {(rol.funciones || "")
                       .split(",")
                       .map((funcion: string) => (
-                        <Badge key={funcion} variant="outline" className="text-xs capitalize">
+                        <Badge
+                          key={funcion}
+                          variant="outline"
+                          className="text-xs capitalize"
+                        >
                           {funcion.trim()}
                         </Badge>
                       ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+
+                  {/* Fecha de creación */}
+                  <p className="text-xs text-gray-500 mt-2">
                     Creado:{" "}
                     {new Date(rol.fecha_creacion).toLocaleDateString("es-NI", {
                       year: "numeric",
@@ -102,6 +119,8 @@ export default function RolesPage() {
                     })}
                   </p>
                 </div>
+
+                {/* Botón Editar */}
                 <Button variant="outline" size="sm" onClick={() => handleEditar(rol.id_rol)}>
                   <Pencil className="w-4 h-4 mr-1" />
                   Editar
@@ -112,5 +131,6 @@ export default function RolesPage() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
+

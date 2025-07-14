@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Settings, Shield } from "lucide-react"
 import General from "./general/general"
 import Roles from "./roles/roles"
-import Permisos from "./permisos/permisos"
 
 // Ejemplo de hook para obtener permisos del usuario
 // Reemplaza esto por tu lógica real de permisos
@@ -51,19 +50,11 @@ export default function ConfiguracionPrincipal() {
           Roles
         </Button>
 
-        <Button
-          variant={vista === "permisos" ? "default" : "ghost"}
-          onClick={() => setVista("permisos")}
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          Permisos
-        </Button>
       </div>
 
-      {/* Contenido dinámico */}
       {vista === "general" && <General />}
       {vista === "roles" && <Roles />}
-      {vista === "permisos" && <Permisos />}
+
     </div>
   )
 }
