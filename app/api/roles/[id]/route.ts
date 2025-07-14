@@ -16,12 +16,9 @@ export async function GET(
         r.nombre_rol,
         r.descripcion,
         r.nivel_acceso,
-        r.fecha_creacion,
-        GROUP_CONCAT(f.funcion ORDER BY f.funcion SEPARATOR ',') AS funciones
+        r.fecha_creacion
       FROM roles r
-      LEFT JOIN rol_funciones f ON r.id_rol = f.id_rol
       WHERE r.eliminado = 0 AND r.id_rol = ?
-      GROUP BY r.id_rol
       `,
       [id]
     )
@@ -48,9 +45,9 @@ export async function PUT(
   try {
     const { id } = params
     const body = await req.json()
-    const { nombre_rol, descripcion, nivel_acceso, funciones } = body
+    const { nombre_rol, descripcion, nivel_acceso } = body
 
-    if (!nombre_rol || !Array.isArray(funciones)) {
+    if (!nombre_rol) {
       return NextResponse.json(
         { success: false, error: "Datos incompletos o inválidos" },
         { status: 400 }
@@ -62,15 +59,6 @@ export async function PUT(
       `UPDATE roles SET nombre_rol = ?, descripcion = ?, nivel_acceso = ? WHERE id_rol = ?`,
       [nombre_rol, descripcion, nivel_acceso, id]
     )
-
-    // 2. Eliminar funciones previas
-    await executeQuery(`DELETE FROM rol_funciones WHERE id_rol = ?`, [id])
-
-    // 3. Insertar funciones nuevas
-    if (funciones.length > 0) {
-      const values = funciones.map((f: string) => `(${id}, '${f}')`).join(",")
-      await executeQuery(`INSERT INTO rol_funciones (id_rol, funcion) VALUES ${values}`)
-    }
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

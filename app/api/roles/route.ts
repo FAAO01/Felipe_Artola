@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
-// Obtener todos los roles con sus permisos
+// Obtener todos los roles
 export async function GET(_: NextRequest) {
   try {
     const roles = await executeQuery(`
@@ -10,13 +10,9 @@ export async function GET(_: NextRequest) {
         r.nombre_rol,
         r.descripcion,
         r.nivel_acceso,
-        r.fecha_creacion,
-        GROUP_CONCAT(p.nombre ORDER BY p.nombre SEPARATOR ',') AS funciones
+        r.fecha_creacion
       FROM roles r
-      LEFT JOIN rol_funciones rf ON r.id_rol = rf.id_rol
-      LEFT JOIN permisos p ON rf.id_permiso = p.id_permiso
       WHERE r.eliminado = 0
-      GROUP BY r.id_rol
       ORDER BY r.fecha_creacion DESC
     `)
 
@@ -46,13 +42,13 @@ export async function GET(_: NextRequest) {
   }
 }
 
-// Crear un nuevo rol con sus permisos
+// Crear un nuevo rol
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { nombre_rol, descripcion, nivel_acceso, funciones } = body
+    const { nombre_rol, descripcion, nivel_acceso } = body
 
-    if (!nombre_rol || !Array.isArray(funciones)) {
+    if (!nombre_rol) {
       return NextResponse.json(
         { success: false, error: "Datos incompletos o inválidos" },
         { status: 400 }
@@ -71,20 +67,6 @@ export async function POST(req: NextRequest) {
 
     const id_rol = insertId
     if (!id_rol) throw new Error("No se pudo obtener el ID del nuevo rol")
-
-    // Insertar permisos asociados al rol
-    if (funciones.length > 0) {
-      // funciones debe ser un array de nombres de permisos (ej: ["ventas", "clientes"])
-      const permisos = await executeQuery(
-        `SELECT id_permiso, nombre FROM permisos WHERE nombre IN (${funciones.map(() => "?").join(",")})`,
-        funciones
-      )
-
-      const values = (permisos as any[]).map((p) => `(${id_rol}, ${p.id_permiso})`).join(",")
-      if (values) {
-        await executeQuery(`INSERT INTO rol_funciones (id_rol, id_permiso) VALUES ${values}`)
-      }
-    }
 
     return NextResponse.json({ success: true, id_rol })
   } catch (error: any) {

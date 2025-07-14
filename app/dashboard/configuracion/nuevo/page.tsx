@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
 
 export default function NuevoRolPage() {
   const router = useRouter()
@@ -16,36 +15,13 @@ export default function NuevoRolPage() {
     nombre_rol: "",
     descripcion: "",
     nivel_acceso: "1",
-    funciones: [] as string[],
   })
 
   const [mensaje, setMensaje] = useState("")
   const [guardando, setGuardando] = useState(false)
 
-  const todasLasFunciones = [
-    "dashboard",
-    "proveedores",
-    "categoria",
-    "productos",
-    "clientes",
-    "ventas",
-    "copia de seguridad",
-    "reportes",
-    "usuarios",
-    "configuracion",
-  ]
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleToggleFuncion = (funcion: string) => {
-    setForm((prev) => ({
-      ...prev,
-      funciones: prev.funciones.includes(funcion)
-        ? prev.funciones.filter((f) => f !== funcion)
-        : [...prev.funciones, funcion],
-    }))
   }
 
   const handleSubmit = async () => {
@@ -66,7 +42,6 @@ export default function NuevoRolPage() {
           nombre_rol: form.nombre_rol,
           descripcion: form.descripcion,
           nivel_acceso: Number(form.nivel_acceso),
-          funciones: form.funciones,
         }),
       })
 
@@ -92,7 +67,7 @@ export default function NuevoRolPage() {
         <CardHeader>
           <CardTitle>Nuevo Rol</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Completá los campos y asigná las funciones que tendrá este rol.
+            Completá los campos para crear un nuevo rol.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -127,21 +102,6 @@ export default function NuevoRolPage() {
               max={3}
               placeholder="1, 2 o 3"
             />
-          </div>
-
-          <div>
-            <Label>Funciones asignadas</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-              {todasLasFunciones.map((funcion) => (
-                <label key={funcion} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={form.funciones.includes(funcion)}
-                    onCheckedChange={() => handleToggleFuncion(funcion)}
-                  />
-                  {funcion.charAt(0).toUpperCase() + funcion.slice(1)}
-                </label>
-              ))}
-            </div>
           </div>
 
           {mensaje && <p className="text-sm text-muted-foreground">{mensaje}</p>}
