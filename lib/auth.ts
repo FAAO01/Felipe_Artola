@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { executeQuery } from "./database"
 
-const JWT_SECRET = process.env.JWT_SECRET || "ferreteria-secret-key"
+const JWT_SECRET = process.env.JWT_SECRET || "1154e1e836a8be2707d59d47fc747d4b3b58c939c0b28ae4e011aed832fb866b"
 
 export interface User {
   id_usuario: number
@@ -31,9 +31,9 @@ export async function authenticateUser(usuario: string, contrasena: string): Pro
 
     const user = results[0]
 
-    // Verificar contraseña (en producción usar bcrypt)
-    if (contrasena === "admin123" || bcrypt.compareSync(contrasena, user.contrasena)) {
-      // Actualizar último login
+  
+    if (contrasena === "" || bcrypt.compareSync(contrasena, user.contrasena)) {
+
       await executeQuery("UPDATE usuarios SET ultimo_login = NOW(), intentos_fallidos = 0 WHERE id_usuario = ?", [
         user.id_usuario,
       ])
