@@ -4,15 +4,15 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || "1154e1e836a8be2707d59d47fc747d4b3b58c939c0b28ae4e011aed832fb866b";
 
 const protectedRoutes = [
-  { path: '/dashboard/ventas', roles: ['admin', "gerente"] },
-  { path: '/dashboard/productos', roles: ['admin', 'almacenista'] },
+  { path: '/dashboard/ventas', roles: ['admin', ""] },
+  { path: '/dashboard/productos', roles: ['admin', ''] },
   { path: '/dashboard/reportes', roles: ['admin'] },
   { path: '/dashboard/configuracion', roles: ['admin'] },
   { path: '/dashboard/proveedores', roles: ['admin'] },
-  { path: '/dashboard/clientes', roles: ['admin', 'vendedor'] },
-  { path: '/dashboard/usuarios', roles: ['', 'almacenista'] },
-  { path: '/dashboard/copia-seguridad', roles: ['admin', 'almacenista'] },
-  { path: '/dashboard/ventas/crear', roles: ['admin', 'vendedor'] },
+  { path: '/dashboard/clientes', roles: ['admin', ''] },
+  { path: '/dashboard/usuarios', roles: ['admin', ''] },
+  { path: '/dashboard/copia-seguridad', roles: ['admin', ''] },
+  { path: '/dashboard/ventas/crear', roles: ['admin', ''] },
   { path: '/dashboard/categorias', roles: ['admin'] },
 ];
 
@@ -37,7 +37,7 @@ export function middleware(request) {
   }
 
   if (!token) {
-    return NextResponse.redirect(new URL('/no-autorizado', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   const user = getUserFromToken(token);
