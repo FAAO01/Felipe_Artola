@@ -4,22 +4,22 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || "1154e1e836a8be2707d59d47fc747d4b3b58c939c0b28ae4e011aed832fb866b";
 
 const protectedRoutes = [
-  { path: '/dashboard/ventas', roles: ['admin', 'vendedor', "gerente"] },
+  { path: '/dashboard/ventas', roles: ['admin', "gerente"] },
   { path: '/dashboard/productos', roles: ['admin', 'almacenista'] },
-  { path: '/dashboard/usuarios', roles: ['admin'] },
   { path: '/dashboard/reportes', roles: ['admin'] },
   { path: '/dashboard/configuracion', roles: ['admin'] },
   { path: '/dashboard/proveedores', roles: ['admin'] },
   { path: '/dashboard/clientes', roles: ['admin', 'vendedor'] },
-  { path: '/dashboard/', roles: ['', 'almacenista'] },
+  { path: '/dashboard/usuarios', roles: ['', 'almacenista'] },
   { path: '/dashboard/copia-seguridad', roles: ['admin', 'almacenista'] },
   { path: '/dashboard/ventas/crear', roles: ['admin', 'vendedor'] },
+  { path: '/dashboard/categorias', roles: ['admin'] },
 ];
 
 function getUserFromToken(token) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    return decoded; // El token debe tener el campo 'rol'
+    return decoded;
   } catch (error) {
     return null;
   }
@@ -27,9 +27,11 @@ function getUserFromToken(token) {
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get('token')?.value;
+  const token = request.cookies.get('aut-token')?.value;
+  console.log('Token:', token);
 
   const route = protectedRoutes.find(r => pathname.startsWith(r.path));
+  console.log('pathname:', pathname);
   if (!route) {
     return NextResponse.next();
   }
