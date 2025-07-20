@@ -1,36 +1,48 @@
-import { executeQuery } from "@/lib/database";
+import { executeQuery } from "@/lib/database"
 
 interface Permiso {
-  nombre: string;
+  nombre: string
 }
 
 export async function getPermisosPorUsuario(id_usuario: number): Promise<string[]> {
   try {
-    // Permisos por rol
+    // Obtener el id_rol del usuario
+    const rolResult = await executeQuery(
+      `SELECT id_rol FROM usuarios WHERE id_usuario = ?`,
+      [id_usuario]
+    )
+
+    if (!rolResult || rolResult.length === 0) {
+      throw new Error("Usuario no encontrado")
+    }
+
+    const id_rol = rolResult[0].id_rol
+
+    // Obtener permisos por rol
     const rolPermisos = await executeQuery(
-      `SELECT p.nombre FROM permisos p
-       JOIN rol_funciones rf ON p.id_permiso = rf.id_permiso
-       JOIN usuarios u ON u.id_rol = rf.id_rol
-       WHERE u.id_usuario = ?`,
-      [id_usuario]
-    );
+      `SELECT permisos.nombre FROM permisos
+       JOIN rol_permisos ON permisos.id_permiso = rol_permisos.id_permiso
+       WHERE rol_permisos.id_rol = ?`,
+      [id_rol]
+    )
 
-    // Permisos individuales
+    // Obtener permisos individuales por usuario
     const usuarioPermisos = await executeQuery(
-      `SELECT p.nombre FROM permisos p
-       JOIN permisos_usuario pu ON p.id_permiso = pu.id_permiso
-       WHERE pu.id_usuario = ?`,
+      `SELECT permisos.nombre FROM permisos
+       JOIN permisos_usuario ON permisos.id_permiso = permisos_usuario.id_permiso
+       WHERE permisos_usuario.id_usuario = ?`,
       [id_usuario]
-    );
+    )
 
-    const permisos = new Set<string>();
-    (rolPermisos as Permiso[]).forEach(p => permisos.add(p.nombre));
-    (usuarioPermisos as Permiso[]).forEach(p => permisos.add(p.nombre));
+    // Combinar ambos sin duplicados
+    const permisos = new Set<string>()
+    ;(rolPermisos as Permiso[]).forEach(p => permisos.add(p.nombre))
+    ;(usuarioPermisos as Permiso[]).forEach(p => permisos.add(p.nombre))
 
-    return Array.from(permisos);
+    return Array.from(permisos)
   } catch (error) {
-    console.error("Error al obtener permisos del usuario:", error);
-    throw new Error("No se pudieron obtener los permisos del usuario.");
+    console.error("Error al obtener permisos del usuario:", error)
+    throw new Error("No se pudieron obtener los permisos del usuario.")
   }
 }
 

@@ -122,12 +122,21 @@ INSERT INTO `permisos` (`id_permiso`, `nombre`) VALUES
 (2, 'clientes'),
 (6, 'configuracion'),
 (7, 'copia-seguridad'),
-(10, 'Dashboard'),
+(10,'Dashboard'),
 (3, 'productos'),
 (9, 'proveedores'),
 (4, 'reportes'),
 (5, 'usuarios'),
 (1, 'ventas');
+
+
+CREATE TABLE `rol_permisos` (
+  `id_rol` int NOT NULL,
+  `id_permiso` int NOT NULL,
+  PRIMARY KEY (`id_rol`, `id_permiso`),
+  FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`),
+  FOREIGN KEY (`id_permiso`) REFERENCES `permisos` (`id_permiso`)
+);
 
 -- --------------------------------------------------------
 

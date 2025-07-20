@@ -1,56 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { authenticateUser, generateToken } from "@/lib/auth";
 
-export async function POST(request: NextRequest) {
-  try {
-    const { usuario, contrasena } = await request.json();
+interface LoginBody {
+  usuario: string;
+  contrasena: string;
+}
 
-    if (!usuario || !contrasena) {
-      return NextResponse.json(
-        { error: "Usuario y contraseña son requeridos" },
-        { status: 400 }
-      );
-    }
+export async function POST(request: NextRequest) {
+
+  try {
+    console.log("Intentando login...");
+
+    const { usuario, contrasena }: LoginBody = await request.json();
+    console.log(" Datos recibidos:", usuario);
 
     const user = await authenticateUser(usuario, contrasena);
-
     if (!user) {
-      return NextResponse.json(
-        { error: "Credenciales inválidas" },
-        { status: 401 }
-      );
+      console.log("Usuario no autenticado");
+      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    const token = generateToken(user);
+    console.log("Usuario autenticado:", user.usuario);
 
-    const response = NextResponse.json(
-      {
-        message: "Login exitoso",
-        user: {
-          id: user.id_usuario,
-          nombre: user.nombre,
-          apellido: user.apellido,
-          email: user.email,
-          usuario: user.usuario,
-          rol: user.nombre_rol,
-        },
-      }
-    );
+    const token = generateToken(user);
+    console.log("Token generado:", token);
+
+    const response = NextResponse.json({
+      message: "Login exitoso",
+      usuario: {
+        id: user.id_usuario,
+        nombre: user.nombre,
+        rol: user.nombre_rol,
+      },
+    });
 
     response.cookies.set("aut-token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 8 * 60 * 60, 
-      path: "/", 
+      maxAge: 60 * 60 * 8,
+      path: "/",
     });
 
+    console.log(" Cookie establecida correctamente");
+
     return response;
-  } catch (error: any) {
-    console.error("Error en login:", error?.message || error);
-    return NextResponse.json(
-      { error: "Error interno del servidor" },
-      { status: 500 }
-    );
+
+  } catch (error) {
+    console.error("Error inesperado en login:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
+
