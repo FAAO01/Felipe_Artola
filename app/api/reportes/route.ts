@@ -25,6 +25,7 @@ export async function GET(_: NextRequest) {
       executeQuery(`SELECT * FROM productos WHERE stock <= 10 AND eliminado = 0`)
     ]) as any[]
 
+    // ✅ Función para asegurar que la fecha esté bien formateada
     const formatearFecha = (valor: any) => {
       const fecha = new Date(valor)
       return isNaN(fecha.getTime())

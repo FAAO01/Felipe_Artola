@@ -66,7 +66,7 @@ export default function ReportesPage() {
       const dataVentasTotales = await resVentasTotales.json()
 
       const productosFiltrados =
-        dataProductos?.productos?.filter((p: any) => p.stock <= 5 && p.eliminado === 0) || []
+        dataProductos?.productos?.filter((p: any) => p.stock <= p.stock_minimo  && p.eliminado === 0) || []
 
       // Ventas a crédito (metodo_pago === "credito")
       const ventasCreditoFiltradas = (dataVentasTotales?.ventas ?? []).filter(
