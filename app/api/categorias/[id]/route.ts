@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeQuery } from "@/lib/database";
+import jwt from "jsonwebtoken";
 
-// GET: Obtener una categoría por su ID
+const JWT_SECRET = process.env.JWT_SECRET || "supersecreto";
+
+function getUserIdFromRequest(request: NextRequest): number | null {
+  const token = request.cookies.get("aut-token")?.value;
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id_usuario?: number };
+    return decoded.id_usuario ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -28,12 +42,16 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// PUT: Actualizar una categoría por su ID
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     const data = await request.json();
-    const { nombre, descripcion, estado } = data; // Asumiendo estos campos para la actualización
+    const { nombre, descripcion, estado } = data;
+
+    const usuario_modificacion = getUserIdFromRequest(request);
+    if (!usuario_modificacion) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
 
     const query = `
       UPDATE categorias
@@ -49,7 +67,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       nombre,
       descripcion,
       estado,
-      1, // ID de usuario de modificación (deberías obtenerlo de la sesión de autenticación)
+      usuario_modificacion,
       id,
     ]);
 
@@ -64,10 +82,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// DELETE: Eliminar lógicamente (soft delete) una categoría por su ID
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
+
+    const usuario_eliminacion = getUserIdFromRequest(request);
+    if (!usuario_eliminacion) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const query = `
       UPDATE categorias
       SET
@@ -77,7 +100,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       WHERE id_categoria = ?
     `;
     const result = await executeQuery(query, [
-      1, // ID de usuario de eliminación (deberías obtenerlo de la sesión de autenticación)
+      usuario_eliminacion,
       id,
     ]);
 
