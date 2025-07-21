@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function EditarProveedorPage() {
   const router = useRouter()
-  const { id } = useParams()
+  const { id } = useParams()as { id: string }
   const [form, setForm] = useState({
     nombre: "",
     ruc: "",

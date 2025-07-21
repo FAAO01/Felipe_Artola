@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     let query = `
       SELECT * FROM categorias
-      WHERE eliminado = 0 AND estado = 'activo'
+      WHERE eliminado = 0
     `
     const params: any[] = []
 
