@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecreto";
 
-// 🔐 Extrae el id del usuario desde la cookie del token
 function getUserIdFromRequest(request: NextRequest): number | null {
   const token = request.cookies.get("aut-token")?.value;
   if (!token) return null;
@@ -17,7 +16,6 @@ function getUserIdFromRequest(request: NextRequest): number | null {
   }
 }
 
-// 📦 GET: Lista productos con joins
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -56,7 +54,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 🧾 POST: Crea producto con trazabilidad del creador
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
