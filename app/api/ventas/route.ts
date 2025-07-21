@@ -78,9 +78,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
 export async function POST(request: NextRequest) {
   try {
-    const { id_cliente, metodo_pago, productos } = await request.json();
+    const { id_cliente, metodo_pago, productos, abono } = await request.json();
 
     if (!id_cliente || !metodo_pago || !Array.isArray(productos) || productos.length === 0) {
       return NextResponse.json({ error: "Datos incompletos o inválidos." }, { status: 400 });
@@ -104,6 +105,7 @@ export async function POST(request: NextRequest) {
       subtotal += cantidad * precio_unitario;
     }
 
+    // Verificar stock
     for (const producto of productos) {
       const cantidad = Number(producto.cantidad);
 
@@ -128,14 +130,31 @@ export async function POST(request: NextRequest) {
     const total = subtotal + impuesto;
     const numeroFactura = `F${Date.now()}`;
 
+    const abonoNumber = Number(abono ?? 0);
+    const saldoPendiente = metodo_pago === "credito" ? total - abonoNumber : 0;
+    const estado = saldoPendiente > 0 ? "pendiente" : "pagado";
+
     const ventaResult = await executeQuery(
       `
       INSERT INTO ventas (
         id_cliente, id_usuario, numero_factura, fecha_venta,
-        subtotal, impuesto, total, metodo_pago, usuario_creacion
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?)
+        subtotal, impuesto, total, metodo_pago, abono,
+        saldo_pendiente, estado, usuario_creacion
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [id_cliente, id_usuario, numeroFactura, subtotal, impuesto, total, metodo_pago, id_usuario]
+      [
+        id_cliente,
+        id_usuario,
+        numeroFactura,
+        subtotal,
+        impuesto,
+        total,
+        metodo_pago,
+        abonoNumber,
+        saldoPendiente,
+        estado,
+        id_usuario
+      ]
     );
 
     const id_venta = (ventaResult as any)?.insertId;

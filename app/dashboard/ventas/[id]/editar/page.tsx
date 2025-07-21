@@ -404,8 +404,14 @@ export default function EditarVentaPage() {
               )}
             </div>
 
-            {/* Error y botones */}
+            {/* Error y advertencias */}
             {error && <p className="text-sm text-red-600">{error}</p>}
+
+            {metodo_pago === "credito" && Number(abono) + EPSILON < totalConImpuesto && (
+              <div className="text-sm text-orange-600 font-medium">
+                Atención: la venta está pendiente de pago. El cliente debe abonar el saldo restante.
+              </div>
+            )}
 
             <div className="pt-4">
               <Button type="submit" className="w-full" disabled={loading}>
@@ -421,6 +427,7 @@ export default function EditarVentaPage() {
                 Cancelar
               </Button>
             </div>
+
           </form>
         </CardContent>
       </Card>
