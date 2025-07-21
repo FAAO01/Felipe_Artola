@@ -4,8 +4,6 @@ import path from "path"
 import { randomUUID } from "crypto"
 import os from "os"
 import { spawn } from "child_process"
-//import { config } from "dotenv"
-//config({ path: ".env.local" }) // Asegura que cargue tu .env.local
 
 export async function POST(req: NextRequest) {
   try {

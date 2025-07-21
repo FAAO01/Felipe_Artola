@@ -51,12 +51,16 @@ export async function GET(_: NextRequest) {
 
     rmSync(tempDir, { recursive: true, force: true })
 
-    return new NextResponse(stream, {
-      headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="backup_${fecha}.zip"`,
-      },
-    })
+return new NextResponse(stream, {
+  status: 200,
+  headers: {
+    "Content-Type": "application/zip",
+    "Content-Disposition": `attachment; filename="backup_${fecha}.zip"`,
+    "Content-Length": buffer.length.toString(),
+    "X-Content-Type-Options": "nosniff",
+    "Cache-Control": "no-store",
+  },
+})
   } catch (error: any) {
     console.error("Error generando backup:", error)
     return NextResponse.json({ error: "No se pudo generar el backup." }, { status: 500 })
