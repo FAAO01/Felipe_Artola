@@ -1,13 +1,29 @@
-import { NextRequest, NextResponse } from "next/server"
-import { executeQuery } from "@/lib/database"
+import { NextRequest, NextResponse } from "next/server";
+import { executeQuery } from "@/lib/database";
+import jwt from "jsonwebtoken";
 
-// GET /api/ventas/[id]
+const JWT_SECRET = process.env.JWT_SECRET || "supersecreto";
+
+// Función utilitaria para extraer el ID del usuario autenticado
+function getUserIdFromRequest(request: NextRequest): number | null {
+  const token = request.cookies.get("aut-token")?.value;
+  if (!token) return null;
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id_usuario?: number };
+    return decoded.id_usuario ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// 🧾 GET /api/ventas/[id]
 export async function GET(
   _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = params.id;
 
     const resultado = await executeQuery(
       `
@@ -31,10 +47,10 @@ export async function GET(
         WHERE v.id_venta = ?
       `,
       [id]
-    ) as any[]
+    ) as any[];
 
     if (!resultado || resultado.length === 0) {
-      return NextResponse.json({ error: "Venta no encontrada" }, { status: 404 })
+      return NextResponse.json({ error: "Venta no encontrada" }, { status: 404 });
     }
 
     const venta = {
@@ -52,39 +68,44 @@ export async function GET(
         precio_unitario: r.precio_unitario,
         subtotal: r.subtotal,
       })),
-    }
+    };
 
-    return NextResponse.json({ venta })
+    return NextResponse.json({ venta });
   } catch (error) {
-    console.error("Error obteniendo venta:", error)
+    console.error("Error obteniendo venta:", error);
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }
-    )
+    );
   }
 }
 
-
+// ✏️ PUT /api/ventas/[id] — actualizar venta con trazabilidad
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id_usuario = getUserIdFromRequest(request);
+    if (!id_usuario) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
+    const id = params.id;
     const {
       id_cliente,
       metodo_pago,
       productos,
       abono = 0
-    } = await request.json()
+    } = await request.json();
 
     const subtotal = productos.reduce(
       (acc: number, p: any) => acc + p.cantidad * p.precio_unitario,
       0
-    )
-    const impuesto = subtotal * 0.18
-    const total = subtotal + impuesto
-    const saldo_pendiente = metodo_pago === "credito" ? total - abono : 0
+    );
+    const impuesto = subtotal * 0.18;
+    const total = subtotal + impuesto;
+    const saldo_pendiente = metodo_pago === "credito" ? total - abono : 0;
 
     await executeQuery(
       `
@@ -93,58 +114,62 @@ export async function PUT(
       WHERE id_venta = ?
       `,
       [id_cliente, metodo_pago, subtotal, impuesto, total, abono, saldo_pendiente, id]
-    )
+    );
 
-    await executeQuery(`DELETE FROM detalle_ventas WHERE id_venta = ?`, [id])
+    await executeQuery(`DELETE FROM detalle_ventas WHERE id_venta = ?`, [id]);
 
     for (const p of productos) {
-      const itemSubtotal = p.cantidad * p.precio_unitario
+      const itemSubtotal = p.cantidad * p.precio_unitario;
       await executeQuery(
-        `INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario, subtotal, usuario_creacion)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [id, p.id_producto, p.cantidad, p.precio_unitario, itemSubtotal, 1]
-      )
+        `
+        INSERT INTO detalle_ventas (
+          id_venta, id_producto, cantidad, precio_unitario, subtotal, usuario_creacion
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        `,
+        [id, p.id_producto, p.cantidad, p.precio_unitario, itemSubtotal, id_usuario]
+      );
     }
 
-    return NextResponse.json({ message: "Venta actualizada correctamente." })
+    return NextResponse.json({ message: "Venta actualizada correctamente." });
   } catch (error: any) {
-    console.error("Error al actualizar venta:", error.message)
-    return NextResponse.json({ error: "Error al actualizar venta" }, { status: 500 })
+    console.error("Error al actualizar venta:", error.message);
+    return NextResponse.json({ error: "Error al actualizar venta" }, { status: 500 });
   }
 }
 
-
+// 🗑️ DELETE /api/ventas/[id] — soft delete
 export async function DELETE(
   _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = params.id;
 
     const venta = await executeQuery(
       `SELECT id_venta, eliminado FROM ventas WHERE id_venta = ?`,
       [id]
-    ) as any[]
+    ) as any[];
 
     if (!venta.length) {
-      return NextResponse.json({ error: "Venta no encontrada." }, { status: 404 })
+      return NextResponse.json({ error: "Venta no encontrada." }, { status: 404 });
     }
 
     if (venta[0].eliminado === 1) {
-      return NextResponse.json({ error: "La venta ya fue eliminada." }, { status: 400 })
+      return NextResponse.json({ error: "La venta ya fue eliminada." }, { status: 400 });
     }
 
     await executeQuery(
       `UPDATE ventas SET eliminado = 1 WHERE id_venta = ?`,
       [id]
-    )
+    );
 
-    return NextResponse.json({ message: "Venta eliminada correctamente." })
+    return NextResponse.json({ message: "Venta eliminada correctamente." });
   } catch (error) {
-    console.error("Error eliminando venta:", error)
+    console.error("Error eliminando venta:", error);
     return NextResponse.json(
       { error: "Error al eliminar la venta" },
       { status: 500 }
-    )
+    );
   }
 }
+

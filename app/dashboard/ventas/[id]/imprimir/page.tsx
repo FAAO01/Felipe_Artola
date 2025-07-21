@@ -99,9 +99,9 @@ export default function Page() {
           <p><strong>Cliente:</strong> {venta.cliente}</p>
           <p><strong>Método de pago:</strong> {(() => {
             switch (venta.metodo_pago) {
-              case "efectivo": return "Pago en efectivo"
-              case "tarjeta": return "Pago con tarjeta"
-              case "transferencia": return "Transferencia bancaria"
+              case "efectivo": return "Efectivo"
+              case "tarjeta": return "Tarjeta"
+              case "transferencia": return "Transferencia"
               case "credito": return "Crédito"
               default: return venta.metodo_pago
             }
