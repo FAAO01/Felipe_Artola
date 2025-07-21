@@ -9,12 +9,13 @@ const protectedRoutes = [
   { path: "/dashboard/ventas/crear", roles: ["super-admin", "gerente", "vendedor"] },
   { path: "/dashboard/productos", roles: ["super-admin", "gerente"] },
   { path: "/dashboard/reportes", roles: ["super-admin"] },
-  { path: "/dashboard/configuracion", roles: ["super-admin"] },
+  { path: "/dashboard/configuracion/nuevo", roles: ["super-admin"] },
   { path: "/dashboard/proveedores", roles: ["super-admin", "gerente"] },
   { path: "/dashboard/clientes/", roles: ["super-admin", "gerente", "vendedor"] },
   { path: "/dashboard/usuarios", roles: ["super-admin"] },
   { path: "/dashboard/copia-seguridad", roles: ["super-admin"] },
   { path: "/dashboard/categorias", roles: ["super-admin", "gerente"] },
+  { path: "/api/categorias", roles: ["super-admin", "gerente"] },
 ];
 
 

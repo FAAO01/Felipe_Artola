@@ -1,5 +1,23 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
+import jwt from "jsonwebtoken"
+
+// Cambia esto por tu secreto real
+const JWT_SECRET = process.env.JWT_SECRET || "supersecreto"
+
+// Utilidad para extraer el id de usuario desde el JWT
+function getUserIdFromRequest(request: NextRequest): number | null {
+  // Busca el token en cookies (ajusta el nombre si es diferente)
+  const token = request.cookies.get("aut-token")?.value || request.cookies.get("token")?.value;
+  if (!token) return null
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { id_usuario?: number }
+    return decoded.id_usuario ?? null
+  } catch (err) {
+    return null
+  }
+}
 
 // GET: Lista categorías, permite búsqueda por nombre o descripción
 export async function GET(request: NextRequest) {
@@ -37,12 +55,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "El nombre es requerido" }, { status: 400 })
     }
 
+    // Obtener el id del usuario autenticado
+    const usuario_creacion = getUserIdFromRequest(request)
+    if (!usuario_creacion) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 })
+    }
+
     const query = `
       INSERT INTO categorias (nombre, descripcion, usuario_creacion)
       VALUES (?, ?, ?)
     `
-    // usuario_creacion: 1 es un placeholder, reemplazar por el usuario real si aplica
-    const result = await executeQuery(query, [nombre.trim(), descripcion || "", 1])
+    const result = await executeQuery(query, [nombre.trim(), descripcion || "", usuario_creacion])
 
     return NextResponse.json({
       message: "Categoría creada exitosamente",
@@ -53,3 +76,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 })
   }
 }
+

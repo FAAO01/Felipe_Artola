@@ -28,6 +28,7 @@ export default function NuevaCategoriaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
+        credentials: "include"
       })
       if (!res.ok) throw new Error("Error al crear categoría")
       router.push("/dashboard/categorias")
