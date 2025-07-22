@@ -6,15 +6,9 @@ import { Settings, Shield } from "lucide-react"
 import General from "./general/general"
 import Roles from "./roles/roles"
 
-// Ejemplo de hook para obtener permisos del usuario
-// Reemplaza esto por tu lógica real de permisos
 function usePermiso() {
-  // Aquí deberías obtener los permisos reales del usuario autenticado
-  // Por ejemplo, desde contexto, redux, o props
-  // Retorna true si tiene permiso, false si no
-  // Este es solo un ejemplo:
   const permisos = {
-    puedeVerConfiguracion: true, // Cambia a false para probar el mensaje de sin acceso
+    puedeVerConfiguracion: true,
   }
   return permisos
 }

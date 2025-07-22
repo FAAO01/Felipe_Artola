@@ -43,11 +43,11 @@ export default function RolesPage() {
   }, []);
 
   const handleEditar = (id: number) => {
-    router.push(`/dashboard/configuracion/roles/${id}/editar`);
+    router.push(`/`);
   };
 
   const handleNuevoRol = () => {
-    router.push("/dashboard/configuracion/nuevo");
+    router.push("/dashboard/configuracion");
   };
 
   return (
@@ -59,13 +59,6 @@ export default function RolesPage() {
             Visualizá los roles del sistema y las funciones que tienen asignadas.
           </p>
         </div>
-        <Button
-          className="bg-orange-500 hover:bg-orange-600 text-white"
-          onClick={handleNuevoRol}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nuevo Rol
-        </Button>
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -119,12 +112,6 @@ export default function RolesPage() {
                     })}
                   </p>
                 </div>
-
-                {/* Botón Editar */}
-                <Button variant="outline" size="sm" onClick={() => handleEditar(rol.id_rol)}>
-                  <Pencil className="w-4 h-4 mr-1" />
-                  Editar
-                </Button>
               </div>
             </div>
           ))
