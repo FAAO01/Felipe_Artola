@@ -27,21 +27,37 @@ const navigation = [
 export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [usuario, setUsuario] = useState<{ usuario: string; rol: string } | null>(null)
+  const [usuario, setUsuario] = useState<{ usuario: string; nombre_rol: string } | null>(null)
+  const [payloadDebug, setPayloadDebug] = useState<any>(null)
 
   useEffect(() => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("aut-token="))
-      ?.split("=")[1]
-
+    // Intentar leer primero la cookie no httpOnly para pruebas
+    let token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('aut-token-client='))
+      ?.split('=')[1];
+    // Si no existe, intentar la original (por compatibilidad, aunque no funcionará si es httpOnly)
+    if (!token) {
+      token = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('aut-token='))
+        ?.split('=')[1];
+    }
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split(".")[1]))
-        setUsuario({ usuario: payload.usuario, rol: payload.rol })
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        setPayloadDebug(payload)
+        if (payload.usuario && payload.nombre_rol) {
+          setUsuario({ usuario: payload.usuario, nombre_rol: payload.nombre_rol })
+        } else {
+          setUsuario(null)
+        }
       } catch (err) {
-        console.warn("Token inválido")
+        setPayloadDebug({ error: 'Token inválido' })
+        setUsuario(null)
       }
+    } else {
+      setUsuario(null)
     }
   }, [])
 
@@ -86,36 +102,50 @@ export default function Sidebar() {
         })}
       </nav>
       
- {/* Perfil del usuario */}
-<div className="px-4 py-4 border-t bg-gray-50">
-  <div className="flex items-center space-x-3">
-    <div className="bg-gray-200 rounded-full p-1">
-      <UserCircle className="h-8 w-8 text-gray-600" />
-    </div>
-    <div>
-      {usuario ? (
-        <>
-          <div className="font-medium text-gray-800">{usuario.usuario}</div>
-          <div className="text-xs text-white inline-block bg-red-500 rounded px-2 py-0.5 mt-1">
+      {/* Perfil del usuario */}
+      <div className="px-4 py-4 border-t bg-gray-50">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 shadow-lg">
+              <UserCircle className="h-8 w-8 text-white" />
+            </span>
+            {usuario?.nombre_rol && (
+              <span className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 text-xs font-semibold text-red-500 border border-red-200 shadow">
+                {usuario.nombre_rol}
+              </span>
+            )}
           </div>
-        </>
-      ) : (
-        <div className="text-xs text-gray-400">user.id_usuario</div>
-      )}
-    </div>
-  </div>
+          <div>
+            {usuario ? (
+              <>
+                <div className="font-semibold text-gray-900 text-base">{usuario.usuario}</div>
+                <div className="text-xs text-gray-500 mt-1">Bienvenido de nuevo</div>
+              </>
+            ) : (
+              <div className="text-xs text-gray-400 italic">
+                No autenticado
+                {payloadDebug && (
+                  <div className="mt-2 text-[10px] text-gray-400 break-all">
+                    <b>Payload JWT:</b>
+                    <pre>{JSON.stringify(payloadDebug, null, 2)}</pre>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
-  <div className="mt-3">
-<Button
-  onClick={handleLogout}
-  variant="ghost"
-  className="w-full justify-start text-white bg-red-600 hover:bg-red-700"
->
-  <LogOut className="mr-2 h-4 w-4" />
-  Cerrar sesión
-</Button>
-  </div>
-</div>
-</div>
+        <div className="mt-3">
+          <Button
+            onClick={handleLogout}
+            variant="ghost"
+            className="w-full justify-start text-white bg-red-600 hover:bg-red-700"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar sesión
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }
