@@ -1,23 +1,27 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { executeQuery } from "@/lib/database"
 
+// 📌 GET: obtener producto por ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = params.id
-
     const query = `
       SELECT 
-        id_producto,
-        nombre,
-        codigo_barras,
-        descripcion,
-        precio_venta,
-        stock,
-        stock_minimo
-      FROM productos
-      WHERE id_producto = ? AND eliminado = 0
+        p.id_producto,
+        p.nombre,
+        p.codigo_barras,
+        p.descripcion,
+        p.precio_venta,
+        p.stock,
+        p.stock_minimo,
+        p.estado,
+        c.nombre AS categoria_nombre,
+        pr.nombre AS proveedor_nombre
+      FROM productos p
+      LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
+      LEFT JOIN proveedores pr ON p.id_proveedor = pr.id_proveedor
+      WHERE p.id_producto = ? AND p.eliminado = 0
     `
-
     const results = await executeQuery(query, [id])
     const producto = Array.isArray(results) ? results[0] : null
 
@@ -32,6 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
+// ✏️ PUT: actualizar producto
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const id = params.id
@@ -47,7 +52,6 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         stock_minimo = ?
       WHERE id_producto = ?
     `
-
     await executeQuery(query, [
       data.nombre,
       data.codigo_barras,
@@ -62,5 +66,24 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   } catch (error) {
     console.error("Error actualizando producto:", error)
     return NextResponse.json({ error: "Error al actualizar el producto" }, { status: 500 })
+  }
+}
+
+// 🗑️ DELETE: eliminar producto
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const id = params.id
+
+    const query = `
+      UPDATE productos
+      SET eliminado = 1
+      WHERE id_producto = ?
+    `
+    await executeQuery(query, [id])
+
+    return NextResponse.json({ message: "Producto eliminado correctamente" })
+  } catch (error) {
+    console.error("Error al eliminar producto:", error)
+    return NextResponse.json({ error: "Error al eliminar el producto" }, { status: 500 })
   }
 }

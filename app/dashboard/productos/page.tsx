@@ -12,7 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { Plus, Search, Package, MoreVertical } from "lucide-react"
+import { Plus, Search, Package, MoreVertical, Eye, Pencil, Trash } from "lucide-react"
 
 interface Producto {
   id_producto: number
@@ -163,8 +163,20 @@ export default function ProductosPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/ver`)}>
+                        <Eye className="h-4 w-4 text-blue-600" />
+                        Ver
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/editar`)}>
+                        <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 text-red-600"
+                        onClick={() => handleEliminar(producto.id_producto)}
+                      >
+                        <Trash className="h-4 w-4" />
+                        Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
