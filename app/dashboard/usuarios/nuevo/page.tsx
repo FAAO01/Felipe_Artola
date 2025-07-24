@@ -145,7 +145,7 @@ export default function NuevoUsuarioPage() {
               >
                 {roles.map((rol) => (
                   <option key={rol.id_rol} value={rol.id_rol}>
-                    {rol.nombre_rol} - {rol.id_rol} {/* 👈 Visibilidad extra */}
+                    {rol.nombre_rol}
                   </option>
                 ))}
               </select>
