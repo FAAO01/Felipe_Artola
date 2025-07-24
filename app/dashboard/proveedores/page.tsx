@@ -6,8 +6,24 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Plus, Search, Truck, MoreVertical, Mail, Phone, MapPin } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
+import {
+  Plus,
+  Search,
+  Truck,
+  MoreVertical,
+  Mail,
+  Phone,
+  MapPin,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 
 interface Proveedor {
   id_proveedor: number
@@ -35,7 +51,9 @@ export default function ProveedoresPage() {
       if (search) params.append("search", search)
       const response = await fetch(`/api/proveedores?${params}`)
       const data = await response.json()
-      setProveedores(Array.isArray(data.proveedores) ? data.proveedores : Array.isArray(data) ? data : [])
+      setProveedores(
+        Array.isArray(data.proveedores) ? data.proveedores : Array.isArray(data) ? data : []
+      )
     } catch (error) {
       console.error("Error fetching proveedores:", error)
     } finally {
@@ -141,16 +159,25 @@ export default function ProveedoresPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/proveedores/${proveedor.id_proveedor}/detalles`)}>
-                        Ver Detalles
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/proveedores/${proveedor.id_proveedor}/detalles`)}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4 text-blue-600" />
+                        Ver
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/proveedores/${proveedor.id_proveedor}/editar`)}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/proveedores/${proveedor.id_proveedor}/editar`)}
+                        className="flex items-center gap-2"
+                      >
+                        <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="flex items-center gap-2 text-red-600"
                         onClick={() => handleEliminarProveedor(proveedor.id_proveedor)}
                       >
+                        <Trash2 className="h-4 w-4" />
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -171,3 +198,4 @@ export default function ProveedoresPage() {
     </div>
   )
 }
+

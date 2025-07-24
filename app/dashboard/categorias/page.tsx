@@ -12,7 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { Plus, Search, Tag, MoreVertical } from "lucide-react"
+import { Plus, Search, Tag, MoreVertical, Eye, Pencil, Trash } from "lucide-react"
 
 interface Categoria {
   id_categoria: number
@@ -116,28 +116,39 @@ export default function CategoriasPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/ver`)}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/ver`)}
+                        className="flex items-center gap-2"
+                      >
+                        <Eye className="h-4 w-4 text-blue-600" />
                         Ver
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/editar`)}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/editar`)}
+                        className="flex items-center gap-2"
+                      >
+                        <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="flex items-center gap-2 text-red-600"
                         onClick={async () => {
                           const confirmado = confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)
                           if (!confirmado) return
                           try {
                             const res = await fetch(`/api/categorias/${categoria.id_categoria}`, {
-                              method: "DELETE"
+                              method: "DELETE",
                             })
                             if (!res.ok) throw new Error()
-                            setCategorias((prev) => prev.filter((cat) => cat.id_categoria !== categoria.id_categoria))
+                            setCategorias((prev) =>
+                              prev.filter((cat) => cat.id_categoria !== categoria.id_categoria)
+                            )
                           } catch (error) {
                             alert("No se pudo eliminar la categoría.")
                           }
                         }}
                       >
+                        <Trash className="h-4 w-4" />
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -158,3 +169,4 @@ export default function CategoriasPage() {
     </div>
   )
 }
+
