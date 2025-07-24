@@ -9,7 +9,7 @@ import {
   Settings, LogOut, Tag, Truck, FileText, Database,
   Users, UserPlus, UserCircle
 } from "lucide-react"
-import { useEffect, useState } from "react"
+// import { useEffect, useState } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -24,47 +24,19 @@ const navigation = [
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 
-export default function Sidebar() {
+// Sidebar ahora recibe el usuario como prop
+export default function Sidebar({ usuario }: { usuario: { usuario: string; nombre_rol: string } | null }) {
   const pathname = usePathname()
   const router = useRouter()
-  const [usuario, setUsuario] = useState<{ usuario: string; nombre_rol: string } | null>(null)
-  const [payloadDebug, setPayloadDebug] = useState<any>(null)
+  // const [usuario, setUsuario] = useState<{ usuario: string; nombre_rol: string } | null>(null)
+  // const [payloadDebug, setPayloadDebug] = useState<any>(null)
 
-  useEffect(() => {
-    // Intentar leer primero la cookie no httpOnly para pruebas
-    let token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('aut-token-client='))
-      ?.split('=')[1];
-    // Si no existe, intentar la original (por compatibilidad, aunque no funcionará si es httpOnly)
-    if (!token) {
-      token = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('aut-token='))
-        ?.split('=')[1];
-    }
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        setPayloadDebug(payload)
-        if (payload.usuario && payload.nombre_rol) {
-          setUsuario({ usuario: payload.usuario, nombre_rol: payload.nombre_rol })
-        } else {
-          setUsuario(null)
-        }
-      } catch (err) {
-        setPayloadDebug({ error: 'Token inválido' })
-        setUsuario(null)
-      }
-    } else {
-      setUsuario(null)
-    }
-  }, [])
+  // useEffect(() => { ... }, []) // Eliminar lógica de cookies y useEffect
 
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" })
-      router.push("/")
+      window.location.href = "/"
     } catch (error) {
       console.error("Error en logout:", error)
     }
@@ -124,12 +96,6 @@ export default function Sidebar() {
             ) : (
               <div className="text-xs text-gray-400 italic">
                 No autenticado
-                {payloadDebug && (
-                  <div className="mt-2 text-[10px] text-gray-400 break-all">
-                    <b>Payload JWT:</b>
-                    <pre>{JSON.stringify(payloadDebug, null, 2)}</pre>
-                  </div>
-                )}
               </div>
             )}
           </div>
