@@ -20,9 +20,11 @@ export async function GET(_: NextRequest) {
   }
 }
 
-// Función para crear un nuevo usuario
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    console.log("📥 Datos recibidos en /api/usuarios:", body);
+
     const {
       id_rol,
       nombre,
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
       direccion,
       estado = "activo",
       usuario_creacion = 1
-    } = await req.json();
+    } = body;
 
     // Validación básica
     const missingFields: string[] = [];
@@ -46,6 +48,7 @@ export async function POST(req: NextRequest) {
     if (!contrasena) missingFields.push("contraseña");
 
     if (missingFields.length > 0) {
+      console.warn("⚠️ Faltan campos obligatorios:", missingFields);
       return NextResponse.json(
         { error: `Faltan campos obligatorios: ${missingFields.join(", ")}` },
         { status: 400 }
@@ -53,24 +56,28 @@ export async function POST(req: NextRequest) {
     }
 
     // Verificar si el rol existe
+    console.log("🔍 Verificando existencia de id_rol:", id_rol);
     const rolExistente = await executeQuery(
       `SELECT id_rol FROM roles WHERE id_rol = ?`,
       [id_rol]
     );
 
+    console.log("🧾 Resultado de búsqueda de rol:", rolExistente);
     if (!Array.isArray(rolExistente) || rolExistente.length === 0) {
+      console.warn("❌ El rol especificado no existe:", id_rol);
       return NextResponse.json(
         { error: "El rol especificado no existe." },
         { status: 400 }
       );
     }
 
-    // Verificar si el usuario o correo ya están registrados
+    // Verificar si usuario o correo ya existen
     const existentes = await executeQuery(
       `SELECT id_usuario FROM usuarios WHERE usuario = ? OR email = ?`,
       [usuario, email]
     );
 
+    console.log("🔎 Chequeando existencia previa de usuario o correo:", existentes);
     if (Array.isArray(existentes) && existentes.length > 0) {
       return NextResponse.json(
         { error: "El usuario o correo ya están registrados." },
@@ -78,10 +85,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Hash de la contraseña
     const hash = await bcrypt.hash(contrasena, 10);
+    console.log("🔐 Contraseña hasheada correctamente.");
 
-    // Insertar nuevo usuario en la base de datos
+    // Insertar nuevo usuario
     await executeQuery(
       `
       INSERT INTO usuarios (
@@ -95,7 +102,7 @@ export async function POST(req: NextRequest) {
         apellido.trim(),
         email.trim(),
         usuario.trim(),
-        hash, 
+        hash,
         telefono.trim(),
         direccion.trim(),
         estado,
@@ -103,10 +110,10 @@ export async function POST(req: NextRequest) {
       ]
     );
 
+    console.log("✅ Usuario insertado exitosamente.");
     return NextResponse.json({ mensaje: "Usuario creado con éxito." }, { status: 201 });
   } catch (error) {
-    console.error("Error al crear usuario:", error);
+    console.error("🔥 Error al crear usuario:", error);
     return NextResponse.json({ error: "Error al registrar usuario", details: error.message }, { status: 500 });
   }
 }
-

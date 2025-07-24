@@ -1,60 +1,67 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface Rol {
-  id_rol: number
-  nombre_rol: string
+  id_rol: number;
+  nombre_rol: string;
 }
 
 export default function NuevoUsuarioPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [form, setForm] = useState({
-    nombre: "", apellido: "", email: "", usuario: "",
-    contrasena: "", telefono: "", direccion: "", id_rol: 1
-  })
-  const [loading, setLoading] = useState(false)
-  const [roles, setRoles] = useState<Rol[]>([])
-  const [rolesLoading, setRolesLoading] = useState(true)
-  const [rolesError, setRolesError] = useState("")
+    nombre: "",
+    apellido: "",
+    email: "",
+    usuario: "",
+    contrasena: "",
+    telefono: "",
+    direccion: "",
+    id_rol: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [roles, setRoles] = useState<Rol[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
+  const [rolesError, setRolesError] = useState("");
 
   useEffect(() => {
     const fetchRoles = async () => {
-      setRolesLoading(true)
+      setRolesLoading(true);
       try {
-        const res = await fetch("/api/roles")
-        const data = await res.json()
+        const res = await fetch("/api/roles");
+        const data = await res.json();
+        
+        console.log("🧠 Roles obtenidos:", data); // 👈 Log añadido
+
         if (data.success && Array.isArray(data.roles)) {
-          setRoles(data.roles)
-          // Si no hay id_rol seleccionado, selecciona el primero
+          setRoles(data.roles);
           if (data.roles.length > 0 && !form.id_rol) {
-            setForm((prev) => ({ ...prev, id_rol: data.roles[0].id_rol }))
+            setForm((prev) => ({ ...prev, id_rol: data.roles[0].id_rol }));
           }
         } else {
-          setRolesError("No se pudieron cargar los roles.")
+          setRolesError("No se pudieron cargar los roles.");
         }
-      } catch {
-        setRolesError("Error al cargar los roles.")
+      } catch (err) {
+        console.error("❌ Error al cargar roles:", err); // 👈 Log añadido
+        setRolesError("Error al cargar los roles.");
       } finally {
-        setRolesLoading(false)
+        setRolesLoading(false);
       }
-    }
-    fetchRoles()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    };
+    fetchRoles();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setForm({ ...form, [name]: name === "id_rol" ? Number(value) : value })
-  }
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: name === "id_rol" ? Number(value) : value });
+  };
 
-  // Validación simple: todos los campos requeridos y roles cargados
   const isFormValid = () => {
     return (
       form.nombre.trim() !== "" &&
@@ -68,26 +75,36 @@ export default function NuevoUsuarioPage() {
       roles.length > 0 &&
       !rolesLoading &&
       !rolesError
-    )
-  }
+    );
+  };
 
   const handleSubmit = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
+
+      console.log("🔎 Datos del formulario enviados:", form); // 👈 Log añadido
+      console.log("📤 Rol seleccionado:", form.id_rol);        // 👈 Log añadido
+
       const res = await fetch("/api/usuarios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      })
-      if (!res.ok) throw new Error()
-      toast.success("✅ Usuario creado.")
-      router.push("/dashboard/usuarios")
-    } catch {
-      toast.error("❌ Error al registrar usuario.")
+        body: JSON.stringify(form),
+      });
+
+      console.log("📥 Status response:", res.status);          // 👈 Log añadido
+      const data = await res.json();
+      console.log("📩 Respuesta del backend:", data);          // 👈 Log añadido
+
+      if (!res.ok) throw new Error();
+      toast.success("✅ Usuario creado.");
+      router.push("/dashboard/usuarios");
+    } catch (err) {
+      console.error("❌ Error al registrar usuario:", err);    // 👈 Log añadido
+      toast.error("❌ Error al registrar usuario.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-3xl mx-auto py-6">
@@ -107,10 +124,12 @@ export default function NuevoUsuarioPage() {
               />
             </div>
           ))}
+
           <div className="md:col-span-2">
             <Label>Dirección</Label>
             <Input name="direccion" value={form.direccion} onChange={handleChange} />
           </div>
+
           <div className="md:col-span-2">
             <Label>Rol</Label>
             {rolesLoading ? (
@@ -126,12 +145,13 @@ export default function NuevoUsuarioPage() {
               >
                 {roles.map((rol) => (
                   <option key={rol.id_rol} value={rol.id_rol}>
-                    {rol.nombre_rol}
+                    {rol.nombre_rol} - {rol.id_rol} {/* 👈 Visibilidad extra */}
                   </option>
                 ))}
               </select>
             )}
           </div>
+
           <Button
             className="md:col-span-2 mt-4"
             disabled={loading || !isFormValid()}
@@ -139,6 +159,7 @@ export default function NuevoUsuarioPage() {
           >
             {loading ? "Guardando..." : "Registrar usuario"}
           </Button>
+
           <Button
             variant="outline"
             className="md:col-span-2"
@@ -149,6 +170,5 @@ export default function NuevoUsuarioPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-
