@@ -52,6 +52,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verificar si el rol existe
+    const rolExistente = await executeQuery(
+      `SELECT id_rol FROM roles WHERE id_rol = ?`,
+      [id_rol]
+    );
+
+    if (!Array.isArray(rolExistente) || rolExistente.length === 0) {
+      return NextResponse.json(
+        { error: "El rol especificado no existe." },
+        { status: 400 }
+      );
+    }
+
     // Verificar si el usuario o correo ya están registrados
     const existentes = await executeQuery(
       `SELECT id_usuario FROM usuarios WHERE usuario = ? OR email = ?`,
@@ -93,7 +106,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ mensaje: "Usuario creado con éxito." }, { status: 201 });
   } catch (error) {
     console.error("Error al crear usuario:", error);
-    return NextResponse.json({ error: "Error al registrar usuario" }, { status: 500 });
+    return NextResponse.json({ error: "Error al registrar usuario", details: error.message }, { status: 500 });
   }
 }
 
