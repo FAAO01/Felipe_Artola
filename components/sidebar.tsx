@@ -82,7 +82,7 @@ export default function Sidebar({ usuario }: { usuario: { usuario: string; nombr
               <UserCircle className="h-8 w-8 text-white" />
             </span>
             {usuario?.nombre_rol && (
-              <span className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 text-xs font-semibold text-red-500 border border-red-200 shadow">
+              <span className="absolute -bottom-0.5 -right-1.5 bg-white rounded-full px-2 py-08 text-xs font-semibold text-red-500 border border-red-200 shadow">
                 {usuario.nombre_rol}
               </span>
             )}

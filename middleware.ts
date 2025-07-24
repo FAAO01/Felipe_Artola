@@ -4,18 +4,18 @@ import { JWT_SECRET } from "@/lib/authConfig";
 
 // Rutas protegidas con sus roles exactos
 const protectedRoutes = [
-  { path: "/dashboard", roles: ["super-admin", "gerente", "vendedor"] },
-  { path: "/dashboard/ventas", roles: ["super-admin", "gerente", "vendedor"] },
-  { path: "/dashboard/ventas/crear", roles: ["super-admin", "gerente", "vendedor"] },
-  { path: "/dashboard/productos", roles: ["super-admin", "gerente"] },
-  { path: "/dashboard/reportes", roles: ["super-admin"] },
-  { path: "/dashboard/configuracion/nuevo", roles: ["super-admin"] },
-  { path: "/dashboard/proveedores", roles: ["super-admin", "gerente"] },
-  { path: "/dashboard/clientes/", roles: ["super-admin", "gerente", "vendedor"] },
-  { path: "/dashboard/usuarios", roles: ["super-admin"] },
-  { path: "/dashboard/copia-seguridad", roles: ["super-admin"] },
-  { path: "/dashboard/categorias", roles: ["super-admin", "gerente"] },
-  { path: "/api/dashboard/categorias", roles: ["super-admin", "gerente"] },
+  { path: "/dashboard", roles: ["admin", "gerente", "vendedor"] },
+  { path: "/dashboard/ventas", roles: ["admin", "gerente", "vendedor"] },
+  { path: "/dashboard/ventas/crear", roles: ["admin", "gerente", "vendedor"] },
+  { path: "/dashboard/productos", roles: ["dmin", "gerente"] },
+  { path: "/dashboard/reportes", roles: ["admin"] },
+  { path: "/dashboard/configuracion/nuevo", roles: ["admin"] },
+  { path: "/dashboard/proveedores", roles: ["admin", "gerente"] },
+  { path: "/dashboard/clientes/", roles: ["admin", "gerente", "vendedor"] },
+  { path: "/dashboard/usuarios", roles: ["admin"] },
+  { path: "/dashboard/copia-seguridad", roles: ["admin"] },
+  { path: "/dashboard/categorias", roles: ["admin", "gerente"] },
+  { path: "/api/dashboard/categorias", roles: ["admin", "gerente"] },
 ];
 
 
