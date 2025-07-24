@@ -75,7 +75,7 @@ export default function Sidebar({ usuario }: { usuario: { usuario: string; nombr
       </nav>
       
       {/* Perfil del usuario */}
-      <div className="px-4 py-4 border-t bg-gray-50">
+      <div className="px-4 py-4 border-t bg-gray-100">
         <div className="flex items-center gap-4">
           <div className="relative">
             <span className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 shadow-lg">
