@@ -12,7 +12,7 @@ export async function getPermisosPorUsuario(id_usuario: number): Promise<string[
       [id_usuario]
     )
 
-    if (!rolResult || rolResult.length === 0) {
+    if (!rolResult || (rolResult as any).length === 0) {
       throw new Error("Usuario no encontrado")
     }
 
