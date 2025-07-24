@@ -116,8 +116,29 @@ export default function CategoriasPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/ver`)}>
+                        Ver
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push(`/dashboard/categorias/${categoria.id_categoria}/editar`)}>
                         Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={async () => {
+                          const confirmado = confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)
+                          if (!confirmado) return
+                          try {
+                            const res = await fetch(`/api/categorias/${categoria.id_categoria}`, {
+                              method: "DELETE"
+                            })
+                            if (!res.ok) throw new Error()
+                            setCategorias((prev) => prev.filter((cat) => cat.id_categoria !== categoria.id_categoria))
+                          } catch (error) {
+                            alert("No se pudo eliminar la categoría.")
+                          }
+                        }}
+                      >
+                        Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -7,7 +7,7 @@ const protectedRoutes = [
   { path: "/dashboard", roles: ["admin", "gerente", "vendedor"] },
   { path: "/dashboard/ventas", roles: ["admin", "gerente", "vendedor"] },
   { path: "/dashboard/ventas/crear", roles: ["admin", "gerente", "vendedor"] },
-  { path: "/dashboard/productos", roles: ["dmin", "gerente"] },
+  { path: "/dashboard/productos", roles: ["admin", "gerente"] },
   { path: "/dashboard/reportes", roles: ["admin"] },
   { path: "/dashboard/configuracion/nuevo", roles: ["admin"] },
   { path: "/dashboard/proveedores", roles: ["admin", "gerente"] },
