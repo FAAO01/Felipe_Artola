@@ -63,7 +63,7 @@ export default function VerDetalleVentaPage() {
       <Card className="shadow-lg border border-gray-200">
         <CardHeader className="border-b">
           <CardTitle className="text-xl font-semibold tracking-tight">
-            Venta #{venta.id_venta}
+            Factura {venta.id_venta}
           </CardTitle>
         </CardHeader>
 
