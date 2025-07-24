@@ -4,18 +4,16 @@ import { JWT_SECRET } from "@/lib/authConfig";
 
 // Rutas protegidas con sus roles exactos
 const protectedRoutes = [
-  { path: "/dashboard", roles: ["admin", "gerente", "vendedor"] },
-  { path: "/dashboard/ventas", roles: ["admin", "gerente", "vendedor"] },
-  { path: "/dashboard/ventas/crear", roles: ["admin", "gerente", "vendedor"] },
-  { path: "/dashboard/productos", roles: ["admin", "gerente"] },
-  { path: "/dashboard/reportes", roles: ["admin"] },
-  { path: "/dashboard/configuracion/nuevo", roles: ["admin"] },
+  { path: "/dashboard", roles: ["admin" , "geretne" , 'vendedor'] },
+  { path: "/dashboard/categorias", roles: ["admin","gerente"] },
   { path: "/dashboard/proveedores", roles: ["admin", "gerente"] },
+  { path: "/dashboard/productos", roles: ["admin", "gerente"] },
   { path: "/dashboard/clientes/", roles: ["admin", "gerente", "vendedor"] },
+  { path: "/dashboard/ventas", roles: ["admin", "gerente", "vendedor"] },
   { path: "/dashboard/usuarios", roles: ["admin"] },
+  { path: "/dashboard/reportes", roles: ["admin"] },
   { path: "/dashboard/copia-seguridad", roles: ["admin"] },
-  { path: "/dashboard/categorias", roles: ["admin", "gerente"] },
-  { path: "/api/dashboard/categorias", roles: ["admin", "gerente"] },
+  { path: "/dashboard/configuracion", roles: ["admin",] },
 ];
 
 
