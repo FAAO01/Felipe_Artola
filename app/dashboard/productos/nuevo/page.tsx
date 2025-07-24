@@ -59,7 +59,7 @@ export default function NuevoProductoPage() {
       try {
         const res = await fetch("/api/categorias")
         const data = await res.json()
-        setCategorias(Array.isArray(data.categorias) ? data.categorias : [])
+        setCategorias(Array.isArray(data.categorias) ? data.categorias.filter((cat) => cat.estado === "activo") : [])
       } catch {
         setCategorias([])
       }
@@ -69,7 +69,7 @@ export default function NuevoProductoPage() {
       try {
         const res = await fetch("/api/proveedores")
         const data = await res.json()
-        setProveedores(Array.isArray(data.proveedores) ? data.proveedores : [])
+        setProveedores(Array.isArray(data.proveedores) ? data.proveedores.filter((prov) => prov.estado === "activo") : [])
       } catch {
         setProveedores([])
       }
