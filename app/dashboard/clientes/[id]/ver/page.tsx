@@ -11,12 +11,23 @@ import {
 import { Button } from "@/components/ui/button"
 import { User, Mail, Phone, MapPin, FileText } from "lucide-react"
 
+interface Cliente {
+  id_cliente: number
+  nombre: string
+  apellido: string
+  tipo_documento: string
+  numero_documento: string
+  email: string
+  telefono: string
+  direccion: string
+}
+
 export default function VerClientePage() {
   const router = useRouter()
   const params = useParams()
-  const id = params?.id as string
+  const id = params?.id as string | undefined
 
-  const [cliente, setCliente] = useState<any>(null)
+  const [cliente, setCliente] = useState<Cliente | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
@@ -33,6 +44,7 @@ export default function VerClientePage() {
         setLoading(false)
       }
     }
+
     if (id) fetchCliente()
   }, [id])
 
@@ -47,12 +59,12 @@ export default function VerClientePage() {
   return (
     <div className="max-w-2xl mx-auto mt-10">
       <Card>
-        <CardHeader>
-          <CardTitle><center>Detalle del Cliente</center></CardTitle>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle>Detalle del Cliente</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-orange-100 rounded-lg">
+            <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
               <User className="h-6 w-6 text-orange-600" />
             </div>
             <div>
@@ -60,7 +72,7 @@ export default function VerClientePage() {
                 {cliente.nombre} {cliente.apellido}
               </h2>
               <p className="text-sm text-gray-500 flex items-center gap-1">
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 {cliente.tipo_documento} {cliente.numero_documento}
               </p>
             </div>
@@ -68,20 +80,20 @@ export default function VerClientePage() {
 
           <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground" />
+              <Mail className="h-4 w-4 text-gray-400" />
               {cliente.email}
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4 text-muted-foreground" />
+              <Phone className="h-4 w-4 text-gray-400" />
               {cliente.telefono}
             </div>
             <div className="col-span-2 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <MapPin className="h-4 w-4 text-gray-400" />
               {cliente.direccion}
             </div>
           </div>
 
-          <Button variant="secondary" className="w-full mt-4" onClick={() => router.push("/dashboard/clientes")}>
+          <Button variant="secondary" className="w-full mt-6" onClick={() => router.push("/dashboard/clientes")}>
             Volver
           </Button>
         </CardContent>
@@ -89,3 +101,4 @@ export default function VerClientePage() {
     </div>
   )
 }
+
