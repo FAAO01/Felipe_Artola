@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Search, User, Mail, Phone, MapPin, Plus, MoreVertical, Package, UserPlus } from "lucide-react"
+import { Search, User, Mail, Phone, MapPin, Plus, MoreVertical, UserPlus, Eye, Pencil, Trash } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -103,11 +103,10 @@ export default function ClientesPage() {
             <p>Cargando...</p>
           ) : clientes.length === 0 ? (
             <div className="text-center py-8">
-               <UserPlus className="mx-auto h-12 w-12 text-gray-400" />
-               <h3 className="mt-2 text-sm font-medium text-gray-900">No hay clientes</h3>
-               <p className="mt-1 text-sm text-gray-500">Comienza agregando un nuevo cliente.</p>
+              <UserPlus className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No hay clientes</h3>
+              <p className="mt-1 text-sm text-gray-500">Comienza agregando un nuevo cliente.</p>
             </div>
-
           ) : (
             <div className="grid gap-4">
               {clientes.map((cliente) => (
@@ -145,13 +144,19 @@ export default function ClientesPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => router.push(`/dashboard/clientes/${cliente.id_cliente}/ver`)}>
+                        <Eye className="h-4 w-4 text-blue-600 mr-2" />
+                        Ver
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => router.push(`/dashboard/clientes/${cliente.id_cliente}/editar`)}>
+                        <Pencil className="h-4 w-4 text-yellow-600 mr-2" />
                         Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-red-600"
+                        className="text-red-600 flex items-center"
                         onClick={() => eliminarCliente(cliente.id_cliente)}
                       >
+                        <Trash className="h-4 w-4 mr-2" />
                         Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -165,3 +170,4 @@ export default function ClientesPage() {
     </div>
   )
 }
+
