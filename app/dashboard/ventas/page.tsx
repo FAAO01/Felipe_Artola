@@ -208,7 +208,7 @@ export default function VentasPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => router.push(`/dashboard/ventas/${venta.id_venta}`)}>
                         <Eye className="h-4 w-4 text-blue-600 mr-2" />
-                        Ver detalles
+                        Ver
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleImprimirVenta(venta.id_venta)}>
                         <Printer className="h-4 w-4 text-green-600 mr-2" />
