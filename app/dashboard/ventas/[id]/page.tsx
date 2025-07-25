@@ -1,16 +1,11 @@
 "use client"
+// import { handleImprimirVenta } from "@/utils/imprimirVenta" 
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { FileText, ShoppingCart } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface ProductoVenta {
   id_producto: number
@@ -27,33 +22,66 @@ interface VentaDetalle {
   fecha: string
   metodo_pago: string
   productos: ProductoVenta[]
+  porcentaje_impuesto: number
+  subtotal: number
+  impuesto: number
+  total: number
 }
 
 export default function VerDetalleVentaPage() {
   const params = useParams()
   const router = useRouter()
-  const id = params?.id as string | undefined
-
   const [venta, setVenta] = useState<VentaDetalle | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
+  const id = params?.id?.toString() ?? ""
 
   useEffect(() => {
     const fetchVenta = async () => {
       try {
         const res = await fetch(`/api/ventas/${id}`)
         const data = await res.json()
-        if (!res.ok || !data.venta) throw new Error("Venta no encontrada")
+        console.log("✅ Venta recibida:", data.venta)
         setVenta(data.venta)
-      } catch (err: any) {
-        setError(err.message || "Error al obtener venta")
-      } finally {
-        setLoading(false)
+      } catch (err) {
+        console.error("❌ Error al obtener venta:", err)
       }
     }
 
     if (id) fetchVenta()
   }, [id])
+
+  // Logs defensivos para validación fiscal
+  useEffect(() => {
+    if (venta) {
+      console.log("ℹ️ Porcentaje de impuesto:", venta.porcentaje_impuesto)
+      console.log("ℹ️ Subtotal recibido:", venta.subtotal)
+      console.log("ℹ️ Impuesto calculado en backend:", venta.impuesto)
+      console.log("ℹ️ Total registrado:", venta.total)
+
+      const missing: string[] = []
+      if (venta.subtotal == null) missing.push("subtotal")
+      if (venta.impuesto == null) missing.push("impuesto")
+      if (venta.total == null) missing.push("total")
+      if (venta.porcentaje_impuesto == null) missing.push("porcentaje_impuesto")
+      if (missing.length > 0) {
+        console.warn("⚠️ Campos fiscales faltantes:", missing)
+      } else {
+        console.log("✅ Todos los campos fiscales están presentes.")
+      }
+
+      const tipos = {
+        subtotal: typeof venta.subtotal,
+        impuesto: typeof venta.impuesto,
+        total: typeof venta.total,
+        porcentaje_impuesto: typeof venta.porcentaje_impuesto,
+      }
+      console.log("🔍 Tipos de campos fiscales:", tipos)
+
+      const valoresNum = Object.entries(tipos).filter(([_, t]) => t !== "number")
+      if (valoresNum.length > 0) {
+        console.error("❌ Campos fiscales inválidos (no numéricos):", valoresNum)
+      }
+    }
+  }, [venta])
 
   const mostrar = (valor: number | string | null | undefined) =>
     new Intl.NumberFormat("es-NI", {
@@ -61,65 +89,48 @@ export default function VerDetalleVentaPage() {
       maximumFractionDigits: 2,
     }).format(Number(valor ?? 0))
 
-  if (loading) {
-    return <div className="text-center py-10">Cargando venta...</div>
-  }
-
-  if (error || !venta) {
-    return <div className="text-center text-red-600 py-10">{error || "Venta no encontrada"}</div>
-  }
-
-  const subtotal = venta.productos.reduce(
-    (acc, item) => acc + Number(item.subtotal || 0),
-    0
-  )
-  const impuesto = subtotal * 0.18
-  const total = subtotal + impuesto
+  if (!venta) return <p className="p-6 text-gray-500">Cargando venta...</p>
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <Card>
-        <CardHeader className="flex items-center justify-between">
-          <CardTitle>Detalle de la Venta</CardTitle>
+    <main className="max-w-3xl mx-auto px-4 py-6">
+      <Card className="shadow-lg border border-gray-200">
+        <CardHeader className="border-b">
+          <CardTitle className="text-xl font-semibold tracking-tight">
+            Venta #{venta.id_venta}
+          </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-4 text-sm text-gray-700">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="h-6 w-6 text-orange-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">Factura {venta.id_venta}</h2>
-              <p className="text-sm text-gray-500 flex items-center gap-1">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                {new Date(venta.fecha).toLocaleString("es-NI")}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pt-2">
+        <CardContent className="space-y-6">
+          <section className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <Label className="text-muted-foreground">Cliente</Label>
               <p>{venta.cliente}</p>
             </div>
             <div>
+              <Label className="text-muted-foreground">Fecha</Label>
+              <p>{new Date(venta.fecha).toLocaleString("es-NI")}</p>
+            </div>
+            <div className="col-span-2">
               <Label className="text-muted-foreground">Método de pago</Label>
               <p className="capitalize">
-                {{
-                  efectivo: "Efectivo",
-                  tarjeta: "Tarjeta",
-                  transferencia: "Transferencia bancaria",
-                  credito: "Crédito"
-                }[venta.metodo_pago] ?? venta.metodo_pago}
+                {venta.metodo_pago === "efectivo" && "Efectivo"}
+                {venta.metodo_pago === "tarjeta" && "Tarjeta"}
+                {venta.metodo_pago === "transferencia" && "Transferencia bancaria"}
+                {venta.metodo_pago === "credito" && "Crédito"}
+                {!["efectivo", "tarjeta", "transferencia", "credito"].includes(venta.metodo_pago) &&
+                  venta.metodo_pago}
               </p>
             </div>
-          </div>
+          </section>
 
-          <div>
+          <section>
             <Label className="text-muted-foreground">Productos</Label>
             <div className="mt-2 rounded-md border divide-y">
               {venta.productos.map((prod, i) => (
-                <div key={i} className="flex justify-between items-center px-4 py-2 text-sm">
+                <div
+                  key={i}
+                  className="flex justify-between items-center px-4 py-2 text-sm"
+                >
                   <div>
                     <p className="font-medium">{prod.producto}</p>
                     <p className="text-muted-foreground">
@@ -132,22 +143,27 @@ export default function VerDetalleVentaPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="text-right text-muted-foreground space-y-1 border-t pt-4">
-            <p>Subtotal: C${mostrar(subtotal)}</p>
-            <p>Impuesto (18%): C${mostrar(impuesto)}</p>
+          <section className="text-sm text-right text-muted-foreground space-y-1 border-t pt-4">
+            <p>Subtotal: C${mostrar(venta.subtotal)}</p>
+            <p>Impuesto ({venta.porcentaje_impuesto}%): C${mostrar(venta.impuesto)}</p>
             <p className="text-lg text-black dark:text-white font-bold">
-              Total: C${mostrar(total)}
+              Total: C${mostrar(venta.total)}
             </p>
-          </div>
+          </section>
 
-          <Button variant="secondary" className="w-full mt-6" onClick={() => router.push("/dashboard/ventas")}>
-            Volver al listado
-          </Button>
+          <div className="pt-4">
+            <Button
+              variant="secondary"
+              className="w-full sm:w-auto"
+              onClick={() => router.push("/dashboard/ventas")}
+            >
+              Volver al listado
+            </Button>
+          </div>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }
-

@@ -4,7 +4,7 @@ import { JWT_SECRET } from "@/lib/authConfig";
 
 // Rutas protegidas con sus roles exactos
 const protectedRoutes = [
-  { path: "/dashboard", roles: ["admin" , "geretne" , 'vendedor'] },
+  { path: "/dashboard", roles: ["admin" , "gerente" , 'vendedor'] },
   { path: "/dashboard/categorias", roles: ["admin","gerente"] },
   { path: "/dashboard/proveedores", roles: ["admin", "gerente"] },
   { path: "/dashboard/productos", roles: ["admin", "gerente"] },

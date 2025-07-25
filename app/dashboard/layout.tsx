@@ -9,7 +9,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   // Obtener la cookie httpOnly en el servidor
-  let usuario = null
+  let usuario: { usuario: string; nombre_rol: string } | null = null
   const cookieStore = cookies()
   const token = cookieStore.get("aut-token")?.value
   if (token) {

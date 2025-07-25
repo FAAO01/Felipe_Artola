@@ -10,6 +10,7 @@ import { Save } from "lucide-react"
 export default function General() {
   const [config, setConfig] = useState({
     nombre_negocio: "",
+    ruc: "",
     moneda: "",
     impuesto: "",
   })
@@ -80,13 +81,14 @@ export default function General() {
             </div>
 
             <div>
-              <Label>Moneda</Label>
-              <Input
-                name="moneda"
-                value={config.moneda}
-                onChange={handleChange}
-                placeholder="Ej: C$"
-              />
+              <Label>RUC</Label>
+                <Input
+                  name="ruc"
+                  value={config.ruc}
+                  onChange={handleChange}
+                  placeholder="Ej: J0310000012345"
+                  maxLength={20}
+                />
             </div>
 
             <div>

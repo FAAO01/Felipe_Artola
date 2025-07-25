@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -9,7 +10,6 @@ import {
   Settings, LogOut, Tag, Truck, FileText, Database,
   Users, UserPlus, UserCircle
 } from "lucide-react"
-// import { useEffect, useState } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -24,14 +24,30 @@ const navigation = [
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 
-// Sidebar ahora recibe el usuario como prop
-export default function Sidebar({ usuario }: { usuario: { usuario: string; nombre_rol: string } | null }) {
+export default function Sidebar({
+  usuario,
+}: {
+  usuario: { usuario: string; nombre_rol: string } | null
+}) {
   const pathname = usePathname()
   const router = useRouter()
-  // const [usuario, setUsuario] = useState<{ usuario: string; nombre_rol: string } | null>(null)
-  // const [payloadDebug, setPayloadDebug] = useState<any>(null)
+  const [nombreNegocio, setNombreNegocio] = useState("Ferretería")
 
-  // useEffect(() => { ... }, []) // Eliminar lógica de cookies y useEffect
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("/api/configuracion")
+        const data = await res.json()
+        if (typeof data.nombre_negocio === "string" && data.nombre_negocio.trim() !== "") {
+          setNombreNegocio(data.nombre_negocio.trim())
+        }
+      } catch (error) {
+        console.error("❌ Error al obtener configuración:", error)
+      }
+    }
+
+    fetchConfig()
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -44,11 +60,11 @@ export default function Sidebar({ usuario }: { usuario: { usuario: string; nombr
 
   return (
     <div className="flex h-full w-64 flex-col bg-white border-r shadow-sm">
-      {/* Encabezado */}
+      {/* Encabezado con nombre dinámico */}
       <div className="flex h-16 items-center px-6 border-b">
         <div className="flex items-center space-x-2">
           <Store className="h-8 w-8 text-orange-500" />
-          <span className="text-xl font-bold">Ferretería</span>
+          <span className="text-xl font-bold">{nombreNegocio}</span>
         </div>
       </div>
 
@@ -73,7 +89,7 @@ export default function Sidebar({ usuario }: { usuario: { usuario: string; nombr
           )
         })}
       </nav>
-      
+
       {/* Perfil del usuario */}
       <div className="px-4 py-4 border-t bg-gray-100">
         <div className="flex items-center gap-4">
@@ -94,9 +110,7 @@ export default function Sidebar({ usuario }: { usuario: { usuario: string; nombr
                 <div className="text-xs text-gray-500 mt-1">Bienvenido de nuevo</div>
               </>
             ) : (
-              <div className="text-xs text-gray-400 italic">
-                No autenticado
-              </div>
+              <div className="text-xs text-gray-400 italic">No autenticado</div>
             )}
           </div>
         </div>

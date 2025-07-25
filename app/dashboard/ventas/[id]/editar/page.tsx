@@ -41,6 +41,7 @@ export default function EditarVentaPage() {
   const [abono, setAbono] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [impuestoRate, setImpuestoRate] = useState(0.18)
 
   const EPSILON = 0.01
 
@@ -50,16 +51,22 @@ export default function EditarVentaPage() {
         const [resProd, resClientes, resVenta] = await Promise.all([
           fetch("/api/productos"),
           fetch("/api/clientes"),
-          fetch(`/api/ventas/${id}`),
+          fetch(`/api/ventas/${id}`)
         ])
+
         const productosData = await resProd.json()
         const clientesData = await resClientes.json()
         const ventaData = await resVenta.json()
 
+        const venta = ventaData.venta
+
+        const impuestoDecimal = Number(venta.porcentaje_impuesto) / 100
+        if (!isNaN(impuestoDecimal)) {
+          setImpuestoRate(impuestoDecimal)
+        }
+
         setProductos(productosData.productos || [])
         setClientes(clientesData.clientes || [])
-
-        const venta = ventaData.venta
         setIdCliente(String(venta.id_cliente))
         setMetodoPago(venta.metodo_pago)
         setNota(venta.nota || "")
@@ -116,7 +123,7 @@ export default function EditarVentaPage() {
     }, 0)
 
   const total = calcularTotal()
-  const totalConImpuesto = total * 1.18
+  const totalConImpuesto = total * (1 + impuestoRate)
   const vuelto =
     metodo_pago === "efectivo" && parseFloat(montoRecibido) > 0
       ? parseFloat(montoRecibido) - totalConImpuesto
@@ -391,7 +398,7 @@ export default function EditarVentaPage() {
             {/* Totales */}
             <div className="text-sm text-muted-foreground pt-2">
               <p>Subtotal: C${total.toFixed(2)}</p>
-              <p>Impuesto (18%): C${(total * 0.18).toFixed(2)}</p>
+              <p>Impuesto ({(impuestoRate * 100).toFixed(0)}%): C${(total * impuestoRate).toFixed(2)}</p>
               <p className="font-semibold text-black dark:text-white">
                 Total: C${totalConImpuesto.toFixed(2)}
               </p>

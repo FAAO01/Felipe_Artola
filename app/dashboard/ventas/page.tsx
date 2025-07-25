@@ -1,5 +1,6 @@
 "use client"
 
+import { handleImprimirVenta } from "utils/imprimirVenta"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -86,9 +87,6 @@ export default function VentasPage() {
     }
   }
 
-  const handleImprimirVenta = (id: number) => {
-    window.open(`/dashboard/ventas/${id}/imprimir`)
-  }
 
   const renderEstadoPago = (venta: Venta) => {
     const pagado = (

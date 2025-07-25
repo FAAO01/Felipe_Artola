@@ -5,7 +5,7 @@ import { executeQuery } from "@/lib/database"
 export async function GET(_: NextRequest) {
   try {
     const result = await executeQuery(`
-      SELECT nombre_negocio, moneda, impuesto
+      SELECT nombre_negocio, ruc, moneda, impuesto
       FROM configuracion
       LIMIT 1
     `)
@@ -28,17 +28,35 @@ export async function GET(_: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { nombre_negocio, moneda, impuesto } = body
+    let { nombre_negocio, ruc, moneda, impuesto } = body
 
-    if (!nombre_negocio || !moneda || isNaN(impuesto)) {
-      return NextResponse.json({ error: "Datos inválidos" }, { status: 400 })
+    // Validaciones defensivas
+    if (typeof nombre_negocio !== "string" || nombre_negocio.trim() === "") {
+      return NextResponse.json({ error: "Nombre inválido" }, { status: 400 })
     }
 
-    await executeQuery(`
+    if (typeof ruc !== "string" || ruc.trim().length > 20) {
+      return NextResponse.json({ error: "RUC inválido o demasiado largo" }, { status: 400 })
+    }
+
+    if (typeof moneda !== "string" || moneda.trim() === "") {
+      return NextResponse.json({ error: "Moneda inválida" }, { status: 400 })
+    }
+
+    impuesto = Number(impuesto)
+    if (isNaN(impuesto) || impuesto < 0 || impuesto > 100) {
+      return NextResponse.json({ error: "Impuesto inválido. Debe estar entre 0% y 100%" }, { status: 400 })
+    }
+
+    console.log("[CONFIG PUT] Datos recibidos:", { nombre_negocio, ruc, moneda, impuesto })
+
+    // Ejecutar el UPDATE directamente
+    const result = await executeQuery(`
       UPDATE configuracion
-      SET nombre_negocio = ?, moneda = ?, impuesto = ?
-      LIMIT 1
-    `, [nombre_negocio, moneda, impuesto])
+      SET nombre_negocio = ?, ruc = ?, moneda = ?, impuesto = ?
+    `, [nombre_negocio.trim(), ruc.trim(), moneda.trim(), impuesto])
+
+    console.log("[CONFIG PUT] Resultado UPDATE:", result)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {

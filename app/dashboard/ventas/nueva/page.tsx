@@ -38,16 +38,28 @@ export default function NuevaVentaPage() {
   const [nota, setNota] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [impuestoRate, setImpuestoRate] = useState(0.18) // impuesto por defecto
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const resProd = await fetch("/api/productos")
-        const resClientes = await fetch("/api/clientes")
+        const [resProd, resClientes, resConfig] = await Promise.all([
+          fetch("/api/productos"),
+          fetch("/api/clientes"),
+          fetch("/api/configuracion"),
+        ])
+
         const dataProd = await resProd.json()
         const dataClientes = await resClientes.json()
+        const config = await resConfig.json()
+
         setProductos(dataProd.productos || [])
         setClientes(dataClientes.clientes || [])
+
+        const impuestoDecimal = Number(config.impuesto) / 100
+        if (!isNaN(impuestoDecimal)) {
+          setImpuestoRate(impuestoDecimal)
+        }
       } catch (err) {
         console.error("Error cargando datos:", err)
       }
@@ -83,13 +95,12 @@ export default function NuevaVentaPage() {
     }, 0)
 
   const total = calcularTotal()
-  const totalConImpuesto = total * 1.18
+  const totalConImpuesto = total * (1 + impuestoRate)
   const vuelto =
     metodo_pago === "efectivo" && parseFloat(montoRecibido) > 0
       ? parseFloat(montoRecibido) - totalConImpuesto
       : null
 
-  // Validaciones
   const isEfectivoInsuficiente =
     metodo_pago === "efectivo" &&
     (montoRecibido.trim() === "" || parseFloat(montoRecibido) < totalConImpuesto)
@@ -109,19 +120,19 @@ export default function NuevaVentaPage() {
     e.preventDefault()
     setError("")
 
-    if (metodo_pago === "efectivo" && (montoRecibido.trim() === "" || parseFloat(montoRecibido) < totalConImpuesto)) {
+    if (isEfectivoInsuficiente) {
       setError("El monto recibido en efectivo es menor al total a pagar.")
       return
     }
-    if (metodo_pago === "transferencia" && !/^\d{12}$/.test(montoRecibido)) {
+    if (isTransferenciaInvalida) {
       setError("El ID de transferencia debe ser exactamente 12 dígitos numéricos.")
       return
     }
-    if (metodo_pago === "tarjeta" && (montoRecibido.trim().length !== 4 || !/^\d+$/.test(montoRecibido))) {
+    if (isTarjetaInvalida) {
       setError("Los últimos 4 dígitos de la tarjeta deben ser numéricos.")
       return
     }
-    if (metodo_pago === "credito" && nota.trim() === "") {
+    if (isNotaCreditoInvalida) {
       setError("Debe ingresar una observación o nota para la venta a crédito.")
       return
     }
@@ -137,7 +148,7 @@ export default function NuevaVentaPage() {
           precio_unitario: parseFloat(item.precio_unitario),
         })),
       }
-      
+
       if (metodo_pago === "transferencia" || metodo_pago === "tarjeta" || metodo_pago === "efectivo") {
         payload.estado = "pagado"
         if (metodo_pago === "transferencia") {
@@ -147,7 +158,7 @@ export default function NuevaVentaPage() {
         }
       } else if (metodo_pago === "credito") {
         payload.nota = nota
-        payload.estado = "pendiente" 
+        payload.estado = "pendiente"
       }
 
       const res = await fetch("/api/ventas", {
@@ -245,6 +256,7 @@ export default function NuevaVentaPage() {
                 )}
               </div>
             </div>
+
             <div className="space-y-4">
               {items.map((item, index) => (
                 <div key={index} className="grid grid-cols-3 gap-3 items-end">
@@ -284,9 +296,7 @@ export default function NuevaVentaPage() {
                         min="0"
                         step="0.01"
                         value={item.precio_unitario}
-                        onChange={(e) =>
-                          handleItemChange(index, "precio_unitario", e.target.value)
-                        }
+                        onChange={(e) => handleItemChange(index, "precio_unitario", e.target.value)}
                         required
                       />
                     </div>
@@ -305,7 +315,6 @@ export default function NuevaVentaPage() {
                   </div>
                 </div>
               ))}
-
               <Button type="button" variant="outline" onClick={agregarItem}>
                 + Agregar producto
               </Button>
@@ -313,7 +322,7 @@ export default function NuevaVentaPage() {
 
             <div className="text-sm text-muted-foreground">
               <p>Subtotal: C${total.toFixed(2)}</p>
-              <p>Impuesto (18%): C${(total * 0.18).toFixed(2)}</p>
+              <p>Impuesto ({(impuestoRate * 100).toFixed(0)}%): C${(total * impuestoRate).toFixed(2)}</p>
               <p><strong>Total: C${totalConImpuesto.toFixed(2)}</strong></p>
               {vuelto !== null && (
                 <p className={`font-semibold ${vuelto < 0 ? "text-red-600" : "text-green-600"}`}>
@@ -332,8 +341,8 @@ export default function NuevaVentaPage() {
                 className="w-full"
                 disabled={
                   loading ||
-                  (metodo_pago === "transferencia" && isTransferenciaInvalida) ||
-                  (metodo_pago === "tarjeta" && isTarjetaInvalida) ||
+                  isTransferenciaInvalida ||
+                  isTarjetaInvalida ||
                   isEfectivoInsuficiente ||
                   isNotaCreditoInvalida
                 }

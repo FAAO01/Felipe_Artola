@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecreto";
 
+
 function getUserIdFromRequest(request: NextRequest): number | null {
   const token = request.cookies.get("aut-token")?.value;
   if (!token) return null;
@@ -16,6 +17,7 @@ function getUserIdFromRequest(request: NextRequest): number | null {
   }
 }
 
+//buscador de las facturas
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -92,6 +94,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
+    // Obtener impuesto desde la configuración
+    const configResult = await executeQuery(`
+      SELECT impuesto FROM configuracion LIMIT 1
+    `) as any[];
+
+    if (!configResult || configResult.length === 0) {
+      return NextResponse.json({ error: "No se pudo obtener el impuesto de configuración." }, { status: 500 });
+    }
+
+    const impuestoRate = Number(configResult[0].impuesto)/100;
+    if (isNaN(impuestoRate)) {
+      return NextResponse.json({ error: "El impuesto configurado no es válido." }, { status: 500 });
+    }
+
     let subtotal = 0;
 
     for (const producto of productos) {
@@ -126,21 +142,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const impuesto = subtotal * 0.18;
+    const impuesto = subtotal * impuestoRate;
     const total = subtotal + impuesto;
     const numeroFactura = `F${Date.now()}`;
 
     const abonoNumber = Number(abono ?? 0);
     const saldoPendiente = metodo_pago === "credito" ? total - abonoNumber : 0;
-    const estado = saldoPendiente > 0 ? "pendiente" : "pagado";
+    const estado = saldoPendiente > 0 ? "pendiente" : "vip_pagado";
+
+
 
     const ventaResult = await executeQuery(
       `
       INSERT INTO ventas (
         id_cliente, id_usuario, numero_factura, fecha_venta,
         subtotal, impuesto, total, metodo_pago, abono,
-        saldo_pendiente, estado, usuario_creacion
-      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)
+        saldo_pendiente, estado, usuario_creacion, porcentaje_impuesto
+      ) VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         id_cliente,
@@ -153,7 +171,8 @@ export async function POST(request: NextRequest) {
         abonoNumber,
         saldoPendiente,
         estado,
-        id_usuario
+        id_usuario,
+        configResult[0].impuesto // 💡 aquí guardás el porcentaje directo como estaba configurado
       ]
     );
 
