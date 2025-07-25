@@ -44,13 +44,11 @@ export default function Page() {
   const mostrar = (v: any) =>
     new Intl.NumberFormat("es-NI", { minimumFractionDigits: 2 }).format(Number(v ?? 0))
 
-  // Función segura para parsear números
   const parseNumber = (value: any) => {
     const num = Number(value)
     return isNaN(num) ? 0 : num
   }
 
-  // Asegurar que todos los valores sean números válidos antes de calcular
   const subtotal = venta?.productos.reduce((acc, p) => {
     return acc + parseNumber(p.subtotal)
   }, 0) ?? 0
@@ -63,33 +61,58 @@ export default function Page() {
   return (
     <html>
       <head>
-        <title>Factura #{venta.id_venta}</title>
+        <title>Factura No.{venta.id_venta}</title>
         <style>
           {`@media print {
             .noprint { display: none }
           }
           body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             max-width: 650px;
             margin: 0 auto;
             padding: 20px;
+            background-color: #fff;
           }
-          table th, table td {
+          table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          th, td {
             padding: 6px 8px;
             border-bottom: 1px solid #ddd;
+          }
+          th {
+            background-color: #f2f2f2;
+            text-align: left;
           }
           `}
         </style>
       </head>
       <body>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-          <img src="/business.svg" alt="Logo" style={{ width: 60, marginRight: "16px" }} />
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.4rem" }}>Ferretería</h1>
-            <p style={{ margin: 0 }}>Factura #{venta.id_venta}</p>
-            <p style={{ margin: 0 }}>
-              {new Date(venta.fecha).toLocaleString("es-NI")}
-            </p>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          marginBottom: "20px"
+        }}>
+          <img src="/business.svg" alt="Logo" style={{ width: 70, borderRadius: "8px" }} />
+          <h1 style={{ margin: "4px 0", fontSize: "1.6rem", fontWeight: "600", color: "#333" }}>
+            Ferretería
+          </h1>
+          <p style={{ margin: 0, fontSize: "0.95rem", color: "#666" }}>
+            RUC: 001-22034567-0001
+          </p>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+            marginTop: "6px",
+            fontSize: "0.85rem",
+            color: "#555"
+          }}>
+            <span>{new Date(venta.fecha).toLocaleString("es-NI")}</span>
+            <span>Factura {venta.id_venta}</span>
           </div>
         </div>
 
@@ -108,22 +131,22 @@ export default function Page() {
           })()}</p>
         </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+        <table>
           <thead>
-            <tr style={{ background: "#f2f2f2" }}>
-              <th align="left">Producto</th>
-              <th align="center">Cant</th>
-              <th align="right">Precio</th>
-              <th align="right">Subtotal</th>
+            <tr>
+              <th>Producto</th>
+              <th style={{ textAlign: "center" }}>Cant</th>
+              <th style={{ textAlign: "right" }}>Precio</th>
+              <th style={{ textAlign: "right" }}>Subtotal</th>
             </tr>
           </thead>
           <tbody>
             {venta.productos.map((prod, i) => (
               <tr key={i}>
                 <td>{prod.producto}</td>
-                <td align="center">{prod.cantidad}</td>
-                <td align="right">C${mostrar(prod.precio_unitario)}</td>
-                <td align="right">C${mostrar(prod.subtotal)}</td>
+                <td style={{ textAlign: "center" }}>{prod.cantidad}</td>
+                <td style={{ textAlign: "right" }}>C${mostrar(prod.precio_unitario)}</td>
+                <td style={{ textAlign: "right" }}>C${mostrar(prod.subtotal)}</td>
               </tr>
             ))}
           </tbody>
@@ -154,3 +177,4 @@ export default function Page() {
     </html>
   )
 }
+
