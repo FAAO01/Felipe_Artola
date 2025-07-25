@@ -65,8 +65,7 @@ export default function ReportesPage() {
       const dataProductos = await resProductos.json()
       const dataVentasTotales = await resVentasTotales.json()
 
-      const productosFiltrados =
-        dataProductos?.productos?.filter((p: any) => p.stock <= p.stock_minimo  && p.eliminado === 0) || []
+      setProductosBajos(resumenGeneral.productos_bajos_detalle || [])
 
       // Ventas a crédito (metodo_pago === "credito")
       const ventasCreditoFiltradas = (dataVentasTotales?.ventas ?? []).filter(
@@ -77,7 +76,6 @@ export default function ReportesPage() {
       setCategorias(dataCategorias?.categorias?.length ?? 0)
       setProveedores(dataProveedores?.proveedores?.length ?? 0)
       setClientes(dataClientes?.clientes?.length ?? 0)
-      setProductosBajos(productosFiltrados)
       setVentasTotales(dataVentasTotales?.ventas ?? [])
       setVentasCredito(ventasCreditoFiltradas)
       setDataCompletaCategorias(dataCategorias?.categorias ?? [])
@@ -126,9 +124,10 @@ export default function ReportesPage() {
         ID: prod.id_producto,
         Nombre: prod.nombre,
         Stock: prod.stock,
-        Categoría: prod.categoria,
+        "Categoría": prod.categoria,
         Estado: prod.estado
       }))
+
     } else if (title === "Total ventas") {
       data = ventasTotales.map((venta: any) => ({
         ID: venta.id_venta,

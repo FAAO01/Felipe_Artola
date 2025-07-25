@@ -7,20 +7,31 @@ export async function GET(_: NextRequest) {
     const [
       [ventaTotal],
       [ventaCantidad],
-      [stockBajo],
+      productosBajosDetalle,
       [fechaMax],
       [categoriaCount],
       [proveedorCount],
       [clienteCount],
       [pendientesCount],
-      productosBajosDetalle,
       categoriasDetalle,
       proveedoresDetalle,
       clientesDetalle
     ] = await Promise.all([
       executeQuery(`SELECT IFNULL(SUM(total), 0) AS total FROM ventas WHERE eliminado = 0`),
       executeQuery(`SELECT COUNT(*) AS cantidad FROM ventas WHERE eliminado = 0`),
-      executeQuery(`SELECT COUNT(*) AS bajos FROM productos WHERE CAST(stock AS SIGNED) <= 0 AND eliminado = 0`),
+      executeQuery(`
+        SELECT
+          p.id_producto,
+          p.nombre,
+          p.stock,
+          p.stock_minimo,
+          p.estado,
+          c.nombre AS categoria,
+          p.eliminado
+        FROM productos p
+        LEFT JOIN categorias c ON c.id_categoria = p.id_categoria
+        WHERE p.stock <= p.stock_minimo AND p.eliminado = 0
+        `),
       executeQuery(`SELECT MAX(fecha_venta) AS fecha FROM ventas`),
       executeQuery(`SELECT COUNT(*) AS total FROM categorias WHERE eliminado = 0`),
       executeQuery(`SELECT COUNT(*) AS total FROM proveedores WHERE eliminado = 0`),
@@ -62,7 +73,7 @@ export async function GET(_: NextRequest) {
     const resumen = {
       total: parseFloat(ventaTotal.total ?? 0),
       cantidad_ventas: ventaCantidad.cantidad ?? 0,
-      productos_bajos: stockBajo.bajos ?? 0,
+      productos_bajos: productosBajosDetalle.length ?? 0,
       fecha: formatearFecha(fechaMax.fecha),
       categorias: categoriaCount.total ?? 0,
       proveedores: proveedorCount.total ?? 0,
