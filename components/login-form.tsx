@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "../components/ui/button"
@@ -9,7 +8,7 @@ import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Alert, AlertDescription } from "../components/ui/alert"
-import { Loader2, Store } from "lucide-react"
+import { Loader2, Store, Eye, EyeOff } from "lucide-react"
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -18,6 +17,7 @@ export default function LoginForm() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [mostrarContrasena, setMostrarContrasena] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,16 +73,24 @@ export default function LoginForm() {
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="contrasena">Contraseña</Label>
               <Input
                 id="contrasena"
-                type="password"
+                type={mostrarContrasena ? "text" : "password"}
                 placeholder="Ingresa tu contraseña"
                 value={formData.contrasena}
                 onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                className="absolute top-9 right-3 text-muted-foreground focus:outline-none"
+                tabIndex={-1}
+              >
+                {mostrarContrasena ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
 
             {error && (
@@ -91,7 +99,11 @@ export default function LoginForm() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600"
+              disabled={loading}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -102,11 +114,9 @@ export default function LoginForm() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center text-sm text-gray-600">
-          </div>
         </CardContent>
       </Card>
     </div>
   )
 }
+
