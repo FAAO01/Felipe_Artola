@@ -48,8 +48,6 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Impuesto inválido. Debe estar entre 0% y 100%" }, { status: 400 })
     }
 
-    console.log("[CONFIG PUT] Datos recibidos:", { nombre_negocio, ruc, moneda, impuesto })
-
     // Ejecutar el UPDATE directamente
     const result = await executeQuery(`
       UPDATE configuracion
