@@ -113,11 +113,11 @@ export default function VerDetalleVentaPage() {
             <div className="col-span-2">
               <Label className="text-muted-foreground">Método de pago</Label>
               <p className="capitalize">
-                {venta.metodo_pago === "efectivo" && "Efectivo"}
-                {venta.metodo_pago === "tarjeta" && "Tarjeta"}
-                {venta.metodo_pago === "transferencia" && "Transferencia bancaria"}
-                {venta.metodo_pago === "credito" && "Crédito"}
-                {!["efectivo", "tarjeta", "transferencia", "credito"].includes(venta.metodo_pago) &&
+                {venta.metodo_pago === "Efectivo" && "Efectivo"}
+                {venta.metodo_pago === "Tarjeta" && "Tarjeta"}
+                {venta.metodo_pago === "Transferencia bancaria" && "Transferencia bancaria"}
+                {venta.metodo_pago === "Crédito" && "Crédito"}
+                {!["Efectivo", "Tarjeta", "Transferencia", "Credito"].includes(venta.metodo_pago) &&
                   venta.metodo_pago}
               </p>
             </div>

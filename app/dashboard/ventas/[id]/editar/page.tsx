@@ -35,7 +35,7 @@ export default function EditarVentaPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [items, setItems] = useState<ItemVenta[]>([])
   const [id_cliente, setIdCliente] = useState("")
-  const [metodo_pago, setMetodoPago] = useState("efectivo")
+  const [metodo_pago, setMetodoPago] = useState("Efectivo")
   const [montoRecibido, setMontoRecibido] = useState("")
   const [nota, setNota] = useState("")
   const [abono, setAbono] = useState("")
@@ -71,11 +71,11 @@ export default function EditarVentaPage() {
         setMetodoPago(venta.metodo_pago)
         setNota(venta.nota || "")
         setMontoRecibido(
-          venta.metodo_pago === "transferencia"
+          venta.metodo_pago === "Transferencia"
             ? venta.id_transferencia
-            : venta.metodo_pago === "tarjeta"
+            : venta.metodo_pago === "Tarjeta"
             ? venta.ultimos4
-            : venta.metodo_pago === "efectivo"
+            : venta.metodo_pago === "Efectivo"
             ? String(venta.monto_recibido ?? "")
             : ""
         )
@@ -125,7 +125,7 @@ export default function EditarVentaPage() {
   const total = calcularTotal()
   const totalConImpuesto = total * (1 + impuestoRate)
   const vuelto =
-    metodo_pago === "efectivo" && parseFloat(montoRecibido) > 0
+    metodo_pago === "Efectivo" && parseFloat(montoRecibido) > 0
       ? parseFloat(montoRecibido) - totalConImpuesto
       : null
 
@@ -134,7 +134,7 @@ export default function EditarVentaPage() {
     setError("")
 
     if (
-      metodo_pago === "efectivo" &&
+      metodo_pago === "Efectivo" &&
       (montoRecibido.trim() === "" || isNaN(parseFloat(montoRecibido)))
     ) {
       setError("Debe ingresar un monto válido en efectivo.")

@@ -40,7 +40,7 @@ export async function handleImprimirVenta(id_venta: number) {
             <p style="margin: 2px 0 0; font-size: 0.95rem; color: #4a5568;">
               <strong>RUC:</strong> ${rucNegocio}
             </p>
-            <h2 style="margin: 4px 0 0; font-size: 1.1rem; color: #4a5568;">Factura #${venta.id_venta}</h2>
+            <h2 style="margin: 4px 0 0; font-size: 1.1rem; color: #4a5568;">Factura No: ${venta.id_venta}</h2>
             <p style="margin: 2px 0 0; font-size: 0.95rem; color: #718096;">
               ${new Date(venta.fecha).toLocaleString("es-NI")}
             </p>
