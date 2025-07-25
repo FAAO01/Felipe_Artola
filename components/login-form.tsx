@@ -57,7 +57,7 @@ export default function LoginForm() {
               <Store className="h-8 w-8 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Sistema Ferretería</CardTitle>
+          <CardTitle className="text-2xl font-bold">Sistema de Control y Facturación</CardTitle>
           <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>

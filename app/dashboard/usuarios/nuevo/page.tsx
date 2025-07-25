@@ -113,7 +113,7 @@ export default function NuevoUsuarioPage() {
           <CardTitle>Registrar nuevo usuario</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {["nombre", "apellido", "email", "usuario", "contrasena", "telefono"].map((field) => (
+          {["nombre", "apellido", "email", "usuario", "contraseña", "telefono"].map((field) => (
             <div key={field}>
               <Label>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
               <Input

@@ -111,7 +111,7 @@ export default function ReportesPage() {
         Dirección: cli.direccion,
         Email: cli.email,
         Estado: cli.estado,
-        "Fecha de registro": formatearFecha(cli.fecha_creacion)
+        "Fecha de registro": formatearFecha(cli.fecha_registro)
       }))
     } else if (title === "Categorías") {
       data = dataCompletaCategorias.map((cat: any) => ({
