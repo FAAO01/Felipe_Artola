@@ -3,6 +3,14 @@ import { jwtVerify } from "jose";
 import { JWT_SECRET } from "@/lib/authConfig";
 
 const permissions = [
+
+  {
+    path: "/dashboard",
+    actions: {
+      ver: ["admin", "gerente", "vendedor"]
+    }
+  },
+  
   {
     path: "/dashboard/categorias",
     actions: {
