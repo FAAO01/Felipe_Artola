@@ -1,5 +1,4 @@
 "use client"
-
 import { handleImprimirVenta } from "utils/imprimirVenta"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -22,6 +21,7 @@ import {
   Pencil,
   Trash
 } from "lucide-react"
+import { useIsAdminUser } from "@/hooks/use-admin"
 
 interface Venta {
   id_venta: number
@@ -47,6 +47,7 @@ export default function VentasPage() {
   const [search, setSearch] = useState("")
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [page, setPage] = useState(1)
+  const {isAdmin}=useIsAdminUser()
 
   useEffect(() => {
     fetchVentas()
@@ -206,7 +207,7 @@ export default function VentasPage() {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => router.push(`/dashboard/ventas/${venta.id_venta}`)}>
                         <Eye className="h-4 w-4 text-blue-600 mr-2" />
-                        Ver
+                        Ver detalles
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleImprimirVenta(venta.id_venta)}>
                         <Printer className="h-4 w-4 text-green-600 mr-2" />
@@ -216,6 +217,8 @@ export default function VentasPage() {
                         <Pencil className="h-4 w-4 text-yellow-600 mr-2" />
                         Editar
                       </DropdownMenuItem>
+
+                      {isAdmin && (
                       <DropdownMenuItem
                         className="text-red-600 flex items-center"
                         onClick={() => handleEliminarVenta(venta.id_venta)}
@@ -223,6 +226,8 @@ export default function VentasPage() {
                         <Trash className="h-4 w-4 mr-2" />
                         Eliminar
                       </DropdownMenuItem>
+                      )}
+                      
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

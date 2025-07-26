@@ -17,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { useIsAdminUser } from "@/hooks/use-admin"
 
 interface Cliente {
   id_cliente: number
@@ -34,6 +35,7 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const {isAdmin}=useIsAdminUser()
 
   useEffect(() => {
     fetchClientes()
@@ -152,6 +154,7 @@ export default function ClientesPage() {
                         <Pencil className="h-4 w-4 text-yellow-600 mr-2" />
                         Editar
                       </DropdownMenuItem>
+                      {isAdmin && (
                       <DropdownMenuItem
                         className="text-red-600 flex items-center"
                         onClick={() => eliminarCliente(cliente.id_cliente)}
@@ -159,6 +162,7 @@ export default function ClientesPage() {
                         <Trash className="h-4 w-4 mr-2" />
                         Eliminar
                       </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

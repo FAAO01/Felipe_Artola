@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Plus, Search, Package, MoreVertical, Eye, Pencil, Trash } from "lucide-react"
+import { useIsAdminUser } from "@/hooks/use-admin"
 
 interface Producto {
   id_producto: number
@@ -33,6 +34,7 @@ export default function ProductosPage() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const {isAdmin}=useIsAdminUser()
 
   useEffect(() => {
     fetchProductos()
@@ -171,6 +173,7 @@ export default function ProductosPage() {
                         <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
+                      {isAdmin &&(
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-red-600"
                         onClick={() => handleEliminar(producto.id_producto)}
@@ -178,6 +181,7 @@ export default function ProductosPage() {
                         <Trash className="h-4 w-4" />
                         Eliminar
                       </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

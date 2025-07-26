@@ -24,6 +24,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react"
+import { useIsAdminUser } from "@/hooks/use-admin"
 
 interface Proveedor {
   id_proveedor: number
@@ -40,6 +41,8 @@ export default function ProveedoresPage() {
   const [proveedores, setProveedores] = useState<Proveedor[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const {isAdmin}=useIsAdminUser()
+  
 
   useEffect(() => {
     fetchProveedores()
@@ -173,6 +176,7 @@ export default function ProveedoresPage() {
                         <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
+                      {isAdmin &&(
                       <DropdownMenuItem
                         className="flex items-center gap-2 text-red-600"
                         onClick={() => handleEliminarProveedor(proveedor.id_proveedor)}
@@ -180,6 +184,7 @@ export default function ProveedoresPage() {
                         <Trash2 className="h-4 w-4" />
                         Eliminar
                       </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

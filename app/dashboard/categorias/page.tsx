@@ -1,5 +1,5 @@
 "use client"
-
+import Cookies from "js-cookie"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { Plus, Search, Tag, MoreVertical, Eye, Pencil, Trash } from "lucide-react"
+import { useIsAdminUser } from "@/hooks/use-admin"
 
 interface Categoria {
   id_categoria: number
@@ -22,10 +23,12 @@ interface Categoria {
 }
 
 export default function CategoriasPage() {
+
   const router = useRouter()
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const {isAdmin}=useIsAdminUser()
 
   useEffect(() => {
     fetchCategorias()
@@ -47,6 +50,7 @@ export default function CategoriasPage() {
 
   return (
     <div className="space-y-6">
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Categorías</h1>
@@ -130,27 +134,30 @@ export default function CategoriasPage() {
                         <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-600"
-                        onClick={async () => {
-                          const confirmado = confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)
-                          if (!confirmado) return
-                          try {
-                            const res = await fetch(`/api/categorias/${categoria.id_categoria}`, {
-                              method: "DELETE",
-                            })
-                            if (!res.ok) throw new Error()
-                            setCategorias((prev) =>
-                              prev.filter((cat) => cat.id_categoria !== categoria.id_categoria)
-                            )
-                          } catch (error) {
-                            alert("No se pudo eliminar la categoría.")
-                          }
-                        }}
-                      >
-                        <Trash className="h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-red-600"
+                          onClick={async () => {
+                            const confirmado = confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)
+                            if (!confirmado) return
+                            try {
+                              const res = await fetch(`/api/categorias/${categoria.id_categoria}`, {
+                                method: "DELETE",
+                              })
+                              if (!res.ok) throw new Error()
+                              setCategorias((prev) =>
+                                prev.filter((cat) => cat.id_categoria !== categoria.id_categoria)
+                              )
+                            } catch (error) {
+                              alert("No se pudo eliminar la categoría.")
+                            }
+                          }}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
