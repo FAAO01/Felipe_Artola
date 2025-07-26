@@ -16,7 +16,7 @@ const permissions = [
     actions: {
       crear: ["admin", "gerente"],
       ver: ["admin", "gerente"],
-      editar: ["Admin", "gerente"],
+      editar: ["admin", "gerente"],
       eliminar: ["admin"]
     }
   },
@@ -121,7 +121,16 @@ function getAction(request: { method: any; }, pathname: string) {
 }
 
 function matchPermissionRoute(pathname: string) {
-  return permissions.find((perm) => pathname.startsWith(perm.path));
+  // Buscar el permiso cuyo path sea el prefijo más largo de la ruta
+  let matched: any = null;
+  let maxLength = 0;
+  for (const perm of permissions) {
+    if (pathname.startsWith(perm.path) && perm.path.length > maxLength) {
+      matched = perm;
+      maxLength = perm.path.length;
+    }
+  }
+  return matched;
 }
 
 async function getUserFromToken(token: string | undefined) {
