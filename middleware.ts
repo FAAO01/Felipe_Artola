@@ -16,7 +16,7 @@ const permissions = [
     actions: {
       crear: ["admin", "gerente"],
       ver: ["admin", "gerente"],
-      editar: ["admin", "gerente"],
+      editar: ["Admin", "gerente"],
       eliminar: ["admin"]
     }
   },

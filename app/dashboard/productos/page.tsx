@@ -34,7 +34,7 @@ export default function ProductosPage() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const {isAdmin}=useIsAdminUser()
+  const { isAdmin } = useIsAdminUser()
 
   useEffect(() => {
     fetchProductos()
@@ -56,7 +56,7 @@ export default function ProductosPage() {
           }))
         : []
       setProductos(productosLimpios)
-      setTotalPages(1) 
+      setTotalPages(1)
     } catch (error) {
       console.error("Error al obtener productos:", error)
       setProductos([])
@@ -140,21 +140,35 @@ export default function ProductosPage() {
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-medium text-gray-900 truncate">{producto.nombre}</h3>
-                        <Badge variant={producto.stock <= producto.stock_minimo ? "destructive" : "secondary"}>
+                        <h3 className="text-sm font-medium text-gray-900 truncate">
+                          {producto.nombre}
+                        </h3>
+                        <Badge
+                          variant={
+                            producto.stock <= producto.stock_minimo ? "destructive" : "secondary"
+                          }
+                        >
                           {producto.estado}
                         </Badge>
                       </div>
                       <div className="mt-1 text-sm text-gray-500">
-                        Código: {producto.codigo_barras} · Categoría: {producto.categoria_nombre} · Proveedor: {producto.proveedor_nombre}
+                        Código: {producto.codigo_barras} · Categoría: {producto.categoria_nombre} ·
+                        Proveedor: {producto.proveedor_nombre}
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">C$ {producto.precio_venta.toFixed(2)}</p>
-                    <p className={`text-sm ${producto.stock <= producto.stock_minimo ? "text-red-600" : "text-gray-500"}`}>
-                      Stock: {producto.stock}
+                  {/* 🎯 Nueva presentación uniforme */}
+                  <div className="min-w-[120px] text-right space-y-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      <span className="text-muted-foreground">Precio:</span> C$ {producto.precio_venta.toFixed(2)}
+                    </p>
+                    <p
+                      className={`text-sm font-medium ${
+                        producto.stock <= producto.stock_minimo ? "text-red-600" : "text-gray-500"
+                      }`}
+                    >
+                      <span className="text-muted-foreground">Stock:</span> {producto.stock}
                     </p>
                   </div>
 
@@ -165,22 +179,26 @@ export default function ProductosPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/ver`)}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/ver`)}
+                      >
                         <Eye className="h-4 w-4 text-blue-600" />
                         Ver
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/editar`)}>
+                      <DropdownMenuItem
+                        onClick={() => router.push(`/dashboard/productos/${producto.id_producto}/editar`)}
+                      >
                         <Pencil className="h-4 w-4 text-yellow-600" />
                         Editar
                       </DropdownMenuItem>
-                      {isAdmin &&(
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 text-red-600"
-                        onClick={() => handleEliminar(producto.id_producto)}
-                      >
-                        <Trash className="h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 text-red-600"
+                          onClick={() => handleEliminar(producto.id_producto)}
+                        >
+                          <Trash className="h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -192,8 +210,14 @@ export default function ProductosPage() {
                 <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
                   Anterior
                 </Button>
-                <span className="text-sm">Página {page} de {totalPages}</span>
-                <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+                <span className="text-sm">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(page + 1)}
+                >
                   Siguiente
                 </Button>
               </div>
@@ -204,3 +228,4 @@ export default function ProductosPage() {
     </div>
   )
 }
+
