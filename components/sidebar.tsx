@@ -17,10 +17,10 @@ const navigation = [
   { name: "Proveedores", href: "/dashboard/proveedores", icon: Truck },
   { name: "Productos", href: "/dashboard/productos", icon: Package },
   { name: "Clientes", href: "/dashboard/clientes", icon: UserPlus },
-  { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
-  { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
   { name: "Ventas", href: "/dashboard/ventas", icon: ShoppingCart },
+  { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
   { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
+  { name: "Copia de seguridad", href: "/dashboard/copia-seguridad", icon: Database },
   { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ]
 
